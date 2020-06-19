@@ -6,7 +6,7 @@
 
 https://www.anaconda.com/products/individual
 
-### From an Anaconda Instance Navigate to this Local (Downloaded) Repo  
+### From an Anaconda Instance Navigate to a Local (Downloaded) Version of this Repo  
 
 cd downloads/NAT_Summer_2020/notebooks
 
