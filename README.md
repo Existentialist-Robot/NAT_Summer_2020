@@ -19,10 +19,16 @@ conda activate <envname>
   
 ### Open Notebook
 
+Run the following command:
+
 jupyter notebook Stroop.ipynb
 
-the notebook should open in a browser automatically
+The notebook should open in a browser automatically
 
 ### Run Code Blocks
 
-If you run into trouble ask in Slack ffor help
+Read the comments
+
+### Need Help?
+
+If you run into trouble ask for help in the Slack channel "summer_project_team_2020"
