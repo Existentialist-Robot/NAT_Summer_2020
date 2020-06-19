@@ -10,7 +10,7 @@ https://www.anaconda.com/products/individual
 
 cd downloads/NAT_Summer_2020/notebooks
 
-### Create a Virtual Environment with the Required Packages Titled <what you want the env to be called>.yaml
+### Create a Virtual Environment with the Required Packages
 conda env create --file <envname>.yaml
 
 ### Activate 
