@@ -40,9 +40,9 @@ def present(duration=120):
     mywin = visual.Window([1920, 1080], monitor="testMonitor", units="deg",
                           fullscr=True)
     targets = list(
-        map(loadImage, glob('stimulus_presentation/stim/cats_dogs/target-*.jpg')))
+        map(loadImage, glob('stimulus_presentation/faces/happy/*.jpg')))
     nontargets = list(
-        map(loadImage, glob('stimulus_presentation/stim/cats_dogs/nontarget-*.jpg')))
+        map(loadImage, glob('stimulus_presentation/faces/sad/*.jpg')))
 
     for ii, trial in trials.iterrows():
         # inter trial interval
