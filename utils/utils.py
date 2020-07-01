@@ -57,7 +57,6 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         info = create_info(ch_names=ch_names, ch_types=ch_types,
                             sfreq=sfreq, montage=montage, verbose=verbose)
         raw.append(RawArray(data=data, info=info, verbose=verbose))
-        print(raw)
         # concatenate all raw objects
         raws = concatenate_raws(raw, verbose=verbose)
     return raws
@@ -90,6 +89,7 @@ def load_data(subject_nb=1, session_nb=1, sfreq=250.,
         session_nb = '*'
     data_path = os.path.join(os.path.expanduser("~"), "eeg-notebooks", "data", "visual", "Stroop", "subject" + "_" + str(subject_nb), "session" + "_" + str(session_nb), ("*.csv" ))
     fnames = glob(data_path)
+    
     return load_openBCI_csv_as_raw(fnames, sfreq=sfreq, ch_ind=ch_ind,
                                 stim_ind=stim_ind,
                                 replace_ch_names=replace_ch_names, verbose=verbose)
