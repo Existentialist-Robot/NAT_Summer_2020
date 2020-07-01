@@ -6,6 +6,7 @@ from optparse import OptionParser
 from pylsl import StreamInfo, StreamOutlet
 from glob import glob
 from random import choice
+from math import floor
 
 
 def present(duration=120):
@@ -20,10 +21,10 @@ def present(duration=120):
 
     start = time()
 
-    n_trials = 2010
-    iti = .3
-    soa = 0.2
-    jitter = 0.2
+    n_trials = floor(duration / 3.5)
+    iti = 1
+    soa = 2.5
+    jitter = 0.3
     record_duration = np.float32(duration)
 
     # Setup log
