@@ -56,7 +56,7 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         data[:-1] *= 1e-6
         # create MNE object
         info = create_info(ch_names=ch_names, ch_types=ch_types,
-                            sfreq=sfreq, montage=montage, verbose=verbose)
+                            sfreq=sfreq,montage=montage, verbose=verbose)
         raw.append(RawArray(data=data, info=info, verbose=verbose))
 
         # concatenate all raw objects
