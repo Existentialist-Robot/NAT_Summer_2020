@@ -10,7 +10,7 @@ from random import choice
 
 def present(duration=120):
 
-    # create
+    # create 
     info = StreamInfo('Markers', 'Markers', 1, 0, 'int32', 'myuidw43536')
 
     # next make an outlet

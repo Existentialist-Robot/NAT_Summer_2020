@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 from mne import create_info, concatenate_raws
 from mne.io import RawArray
-from mne.channels import read_custom_montage
+from mne.channels import make_standard_montage, read_custom_montage
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -20,7 +20,7 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
     """Load CSV files into a Raw object.
 
     Args:
-        filename (str or list): path or paths to CSV files to load
+        filename (list): paths to CSV files to load
 
     Keyword Args:
         subject_nb (int or str): subject number. If 'all', load all
@@ -38,6 +38,7 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         """
     n_channel = len(ch_ind)
     raw = []
+    
     for fname in filename:
         # read the file
         data = pd.read_csv(fname, index_col=0)
@@ -57,11 +58,12 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         info = create_info(ch_names=ch_names, ch_types=ch_types,
                             sfreq=sfreq, montage=montage, verbose=verbose)
         raw.append(RawArray(data=data, info=info, verbose=verbose))
+
         # concatenate all raw objects
         raws = concatenate_raws(raw, verbose=verbose)
     return raws
 
-def load_data(subject_nb=1, session_nb=1, sfreq=250.,
+def load_data(subject_nb=1, session_nb=1, sfreq=256.,
               ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], stim_ind=16, replace_ch_names=None, verbose=1):
     """Load CSV files from the /data directory into a Raw object.
 
@@ -87,9 +89,12 @@ def load_data(subject_nb=1, session_nb=1, sfreq=250.,
         subject_nb = '*'
     if session_nb == 'all':
         session_nb = '*'
-    data_path = os.path.join(os.path.expanduser("~"), "eeg-notebooks", "data", "visual", "Stroop", "subject" + "_" + str(subject_nb), "session" + "_" + str(session_nb), ("*.csv" ))
-    fnames = glob(data_path)
     
+    recording_path = os.path.join(os.path.expanduser("~"), "eeg-notebooks", "data", "visual", "Stroop", "subject" + "_" + str(subject_nb), "session" + "_" + str(session_nb))
+    filename = '*.csv'
+    data_path = os.path.join(recording_path, filename)
+    fnames = glob(data_path)
+    print(len(fnames))
     return load_openBCI_csv_as_raw(fnames, sfreq=sfreq, ch_ind=ch_ind,
                                 stim_ind=stim_ind,
                                 replace_ch_names=replace_ch_names, verbose=verbose)
