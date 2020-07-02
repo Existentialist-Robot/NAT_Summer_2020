@@ -49,6 +49,9 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
                         else replace_ch_names[c] for c in ch_names]
         # type of each channels
         ch_types = ['eeg'] * n_channel + ['stim']
+        #read_custom refused to work and make_standard was also buggy 
+        #I'm not too sure what to do so I left the code to be so I don't
+        #make it worse
         montage = read_custom_montage('standard_1005')
         # get data and exclude Aux channel
         data = data.values[:, ch_ind + [stim_ind]].T
@@ -94,7 +97,6 @@ def load_data(subject_nb=1, session_nb=1, sfreq=256.,
     filename = '*.csv'
     data_path = os.path.join(recording_path, filename)
     fnames = glob(data_path)
-    print(len(fnames))
     return load_openBCI_csv_as_raw(fnames, sfreq=sfreq, ch_ind=ch_ind,
                                 stim_ind=stim_ind,
                                 replace_ch_names=replace_ch_names, verbose=verbose)
