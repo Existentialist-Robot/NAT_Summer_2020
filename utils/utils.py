@@ -50,14 +50,15 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         # type of each channels
         ch_types = ['eeg'] * n_channel + ['stim']
         #read_custom refused to work and make_standard was also buggy 
-        #I'm not too sure what to do so I left the code to be so I don't
+        #I'm not too sure what to do so I left commented out the code to be so I don't
         #make it worse
         #montage = make_standard_montage('standard_1005')
         # get data and exclude Aux channel
         data = data.values[:, ch_ind + [stim_ind]].T
         # convert in Volts (from uVolts)
         data[:-1] *= 1e-6
-        # create MNE object
+        # create MNE object, I commented out montage cause it was still complaining,
+        #i have the error message if you would like to see
         info = create_info(ch_names=ch_names, ch_types=ch_types,
                             sfreq=sfreq, verbose=verbose)
         raw.append(RawArray(data=data, info=info, verbose=verbose))
