@@ -8,11 +8,19 @@ class artScreen:
         self.size = inputSize
         self.window = visual.Window(size=self.size, pos=[960,540], fullscr=False,allowGUI=True, monitor="testMonitor")
         self.artImage = visual.ImageStim(self.window)
+        self.visualize()
+
+    def visualize(self):
+        """visualize current screen"""
         self.artImage.draw(self.window)
         self.window.flip()
     
     def updateScreen(self,newImage):
         """update the art screen"""
         self.artImage.image = newImage
-        self.artImage.draw(self.window)
-        self.window.flip()
+        self.visualize()
+
+    def clearScreen(self):
+        """clear the screen"""
+        self.artImage = visual.ImageStim(self.window)
+        self.visualize()
