@@ -22,6 +22,8 @@ while True:
     # pylsl.vectorf (the data type that is expected by push_sample)
     mysample = [random.random(), random.random(), random.random(),
                 random.random(), random.random(), random.random(),
+                random.random(), random.random(),random.random(), random.random(), random.random(),
+                random.random(), random.random(), random.random(),
                 random.random(), random.random()]
     # now send it and wait for a bit
     outlet.push_sample(mysample)
