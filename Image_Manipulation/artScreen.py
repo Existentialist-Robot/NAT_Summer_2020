@@ -1,4 +1,5 @@
 from psychopy import visual
+from randomArt import randomArt
 
 class artScreen:
 
@@ -6,7 +7,7 @@ class artScreen:
 
     def __init__(self,inputSize):
         self.size = inputSize
-        self.window = visual.Window(size=self.size, pos=[960,540], fullscr=False,allowGUI=True, monitor="testMonitor")
+        self.window = visual.Window(size=self.size, pos=[self.size[0]//2,self.size[1]//2], fullscr=False,allowGUI=True, monitor="testMonitor")
         self.artImage = visual.ImageStim(self.window)
         self.visualize()
 
@@ -24,3 +25,12 @@ class artScreen:
         """clear the screen"""
         self.artImage = visual.ImageStim(self.window)
         self.visualize()
+
+    def generateArt(self):
+    # def generateArt(self,brainFeatures):
+        """generates random art and updates the screen"""
+        art = randomArt(self.size)
+        updateScreen(art)
+    #     art = randomArt(brainFeatures,self.size)
+    #     updateScreen(art)
+
