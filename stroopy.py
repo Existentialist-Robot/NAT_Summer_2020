@@ -6,11 +6,12 @@ from optparse import OptionParser
 from pylsl import StreamInfo, StreamOutlet
 from glob import glob
 from random import choice
+from math import floor
 
 
 def present(duration=120):
 
-    # create
+    # create 
     info = StreamInfo('Markers', 'Markers', 1, 0, 'int32', 'myuidw43536')
 
     # next make an outlet
@@ -20,10 +21,10 @@ def present(duration=120):
 
     start = time()
 
-    n_trials = 2010
-    iti = .3
-    soa = 0.2
-    jitter = 0.2
+    n_trials = floor(duration / 3.5)
+    iti = 1
+    soa = 2.5
+    jitter = 0.3
     record_duration = np.float32(duration)
 
     # Setup log
@@ -40,9 +41,9 @@ def present(duration=120):
     mywin = visual.Window([1920, 1080], monitor="testMonitor", units="deg",
                           fullscr=True)
     targets = list(
-        map(loadImage, glob('stimulus_presentation/stim/cats_dogs/target-*.jpg')))
+        map(loadImage, glob('stimulus_presentation/faces/happy/*.jpg')))
     nontargets = list(
-        map(loadImage, glob('stimulus_presentation/stim/cats_dogs/nontarget-*.jpg')))
+        map(loadImage, glob('stimulus_presentation/faces/sad/*.jpg')))
 
     for ii, trial in trials.iterrows():
         # inter trial interval
