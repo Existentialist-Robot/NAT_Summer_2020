@@ -90,7 +90,7 @@ def load_data(subject_nb=1, session_nb=1, sfreq=256.,
     if session_nb == 'all':
         session_nb = '*'
     
-    recording_path = os.path.join(os.path.expanduser("~"), "eeg-notebooks", "data", "visual", "Stroop", "subject" + "_" + str(subject_nb), "session" + "_" + str(session_nb))
+    recording_path = os.path.join(Path().absolute(), "data", "subject" + "_" + str(subject_nb), "session" + "_" + str(session_nb))
     filename = '*.csv'
     data_path = os.path.join(recording_path, filename)
     fnames = glob(data_path)
