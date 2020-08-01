@@ -133,7 +133,8 @@ class Stream (Thread):
                     freq_val = np.mean(fft_data[band_idx])
 
                     # calculate exponentially weighted average for a given band, store in avg
-                    avg[band] = (avg_param * avg[band]) + (1 - avg_param) * freq_val
+                    bias_correction = 1 - avg_param**(self.count-self.chunks+1) # prevents unfair estimates for early baseline values
+                    avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
 
 
 if __name__ == '__main__':
