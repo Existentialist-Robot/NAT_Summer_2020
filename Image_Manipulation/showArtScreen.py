@@ -18,7 +18,7 @@ def main():
     inputSize = inputSize.split(',')
     inputSize[0] = int(inputSize[0])
     inputSize[1] = int(inputSize[1])
-    pdb.set_trace()
+    # pdb.set_trace()
     # showScreen(inputSize)
     myscreen = artScreen(inputSize)
     sys.exit(qapp.exec_())

@@ -43,7 +43,7 @@ class artScreen(QWidget):
     def updateScreen(self):
         """ Update the art screen"""
         """ newImage is a PIL Image object of the new image to be displayed """
-        pdb.set_trace()
+        # pdb.set_trace()
         newImage = randomArt(self.size)
         self.qim = ImageQt(newImage)
         pix = QPixmap.fromImage(self.qim)
