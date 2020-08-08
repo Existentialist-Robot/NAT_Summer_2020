@@ -18,7 +18,7 @@ def present(duration=120):
     # next make an outlet
     outlet = StreamOutlet(info)
 
-    markernames = [1, 2]
+    markernames = [1, 2, 3]
 
     start = time()
 
@@ -29,7 +29,7 @@ def present(duration=120):
     record_duration = np.float32(duration)
 
     # Setup log
-    position = np.random.binomial(1, 0.5, n_trials)
+    position = np.random.randint(3, size=n_trials)
 
     trials = DataFrame(dict(position=position,
                             timestamp=np.zeros(n_trials)))
@@ -38,15 +38,18 @@ def present(duration=120):
                           fullscr=True)
 
     word_files = glob(r'stimulus_presentation\words\*.txt')
-    emotional = open(word_files[0])
+    negative = open(word_files[0])
     neutral = open(word_files[1])
+    positive = open(word_files[2])
 
-    targets = list(reader(emotional, delimiter=' '))
-    nontargets = list(reader(neutral, delimiter=' '))
+    negative_words = list(reader(negative, delimiter=' '))
+    neutral_words = list(reader(neutral, delimiter=' '))
+    positive_words = list(reader(positive, delimiter=' '))
 
     # converts from multilist to list
-    targets = [item for target_list in targets for item in target_list]
-    nontargets = [item for nontarget_list in nontargets for item in nontarget_list]
+    negative_words = [item for negative_list in negative_words for item in negative_list]
+    neutral_words = [item for neutral_list in neutral_words for item in neutral_list]
+    positive_words = [item for positive_list in positive_words for item in positive_list]
 
     for ii, trial in trials.iterrows():
         # inter trial interval
@@ -54,7 +57,14 @@ def present(duration=120):
 
         # onset
         pos = trials['position'].iloc[ii]
-        word = choice(targets if pos == 1 else nontargets)
+
+        if pos == 0:
+            word = choice(negative_words)
+        elif pos == 1:
+            word = choice(neutral_words)
+        else:
+            word = choice(positive_words)
+
         text = visual.TextStim(win=mywin, text=word, units='pix', font='Arial', height=175, alignHoriz='center')
         text.draw()
 
