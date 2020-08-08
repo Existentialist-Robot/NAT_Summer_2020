@@ -52,5 +52,5 @@ def randomArt(size):
 
     # Convert to 8-bit, send to PIL and return
     img8Bit = np.uint8(np.rint(img.clip(0.0, 1.0) * 255.0))
-    Image.fromarray(img8Bit).save('output.bmp')
+    # Image.fromarray(img8Bit).save('output.bmp')
     return Image.fromarray(img8Bit)
