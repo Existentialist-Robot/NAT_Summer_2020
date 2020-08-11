@@ -1,21 +1,20 @@
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox)
+from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
 from PyQt5.QtCore import QTimer
-from randomArt import randomArt
+from Image_Manipulation.randomArt import randomArt
+#from randomArt import randomArt
 from PIL.ImageQt import ImageQt
 import sys
 import faulthandler
 import pdb
 
-class artScreen(QWidget):
+class artScreen(QDialog):
 
     """ This is a window that will draw an art on the screen """
     """ inputSize is a list or a tuple of the width and the height of the screen """
     """ App is the PyQt5.QtCore.QApplication object for the main app """
 
-    def __init__(self,inputSize):
-        super().__init__()
-
+    def artDialog(self, inputSize):
         # Set timer for a set interval
         timer = QTimer(self)
         timer.timeout.connect(self.updateScreen)
@@ -61,3 +60,22 @@ class artScreen(QWidget):
             print('Window closed')
         else:
             event.ignore()
+
+def main():
+    if QApplication.instance():
+        qapp = QApplication.instance()
+    else:
+        qapp = QApplication(sys.argv)
+    inputSize = input(
+        'Type in the size of art screen as two numbers with a comma inbetween (e.g. 1920,1060): ')
+    inputSize = inputSize.split(',')
+    inputSize[0] = int(inputSize[0])
+    inputSize[1] = int(inputSize[1])
+    # pdb.set_trace()
+    # showScreen(inputSize)
+    art = artScreen()
+    art.artDialog(inputSize)
+    sys.exit(qapp.exec_())
+
+if __name__=='__main__':
+    main()
