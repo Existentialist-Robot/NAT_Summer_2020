@@ -84,13 +84,39 @@ class Stream (Thread):
         self.count = 0
         self.chunks = 5
         self.avg_len = 10
+        self.lazy_low = 0.9
+        self.lazy_high = 1.1
+
 
         self.buf = CircularBuffer(self.chunks)
 
-        self.state = {'Delta': False,
-                      'Theta': False,
-                      'Alpha': False,
-                      'Beta': False}
+        self.noise = {
+                    'Delta': False,
+                    'Theta': False,
+                    'Alpha': False,
+                    'Beta': False
+                    }
+
+        self.state = {
+                    'Delta': 'Low',
+                    'Theta': 'Low',
+                    'Alpha': 'Low',
+                    'Beta': 'Low'
+                    }
+
+        self.low_bound = {
+                        'Delta': lazy_low,
+                        'Theta': lazy_low,
+                        'Alpha': lazy_low,
+                        'Beta': lazy_low
+                        }
+
+        self.high_bound = {
+                        'Delta': lazy_high,
+                        'Theta': lazy_high,
+                        'Alpha': lazy_high,
+                        'Beta': lazy_high
+                        }
 
         self._stop_loop = False
 
@@ -137,10 +163,14 @@ class Stream (Thread):
                     band_idx = np.where((fft_freqs >= eeg_bands[band][0]) and (fft_freqs <= eeg_bands[band][1]))[0]
                     freq_val = np.mean(fft_data[band_idx])
 
-                    if (freq_val > avg[band] * 0.9) and (freq_val < avg[band] * 1.1):
-                        self.state[band] = True
+                    if (freq_val > avg[band] * self.low_bound[band]) and (freq_val < avg[band] * self.high_bound[band]):
+                        self.noise[band] = True
+                        if freq_val < avg[band]:
+                            self.state[band] = 'Low'
+                        elif freq_val > avg[band]:
+                            self.state[band] = 'High'
                     else:
-                        self.state[band] = False
+                        self.noise[band] = False
 
                     # calculate exponentially weighted average for a given band, store in avg
                     avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
