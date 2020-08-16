@@ -12,7 +12,7 @@ srate = 250
 
 def sendingData():
     # first create a new stream info (here we set the name to BioSemi,
-    # the content-type to EEG, 8 channels, 100 Hz, and float-valued data) The
+    # the content-type to EEG, 16 channels, 250 Hz, and float-valued data) The
     # last value would be the serial number of the device or some other more or
     # less locally unique identifier for the stream as far as available (you
     # could also omit it but interrupted connections wouldn't auto-recover).
