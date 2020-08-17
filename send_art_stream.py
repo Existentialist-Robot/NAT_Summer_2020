@@ -39,7 +39,7 @@ def sendingData():
     baseline_delta = np.sin(np.ones((250,)) * (x * (delta_low_bound+2))) * 4
     baseline_theta  = np.sin(np.ones((250,)) * (x * (theta_low_bound+1.5))) * 4
 
-    baseline = np.sum(alpha,beta,delta,theta)
+    baseline = np.sum(baseline_alpha, baseline_beta, baseline_delta, baseline_theta)
 
 
     real_fake_alpha = np.sin(np.ones((250,)) * (x * (alpha_low_bound+3))) * 6 
