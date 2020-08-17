@@ -48,9 +48,9 @@ def randomArt(size):
     # pdb.set_trace()
 
     # Ensure it has the right dimensions, dX by dY by 3
-    img = np.tile(img, (dX / img.shape[0], dY / img.shape[1], 3 / img.shape[2]))
+    img = np.tile(img, (dX // img.shape[0], dY // img.shape[1], 3 // img.shape[2]))
 
     # Convert to 8-bit, send to PIL and return
     img8Bit = np.uint8(np.rint(img.clip(0.0, 1.0) * 255.0))
-    Image.fromarray(img8Bit).save('output.bmp')
+    # Image.fromarray(img8Bit).save('output.bmp')
     return Image.fromarray(img8Bit)
