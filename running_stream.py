@@ -149,7 +149,7 @@ class Stream (Thread):
                 self.buf.write(data)
 
             # Check that the buffer is filled before creating baseline
-            if self.count >= self.chunks
+            if self.count >= self.chunks:
                 current_data = self.buf.window
 
                 # converts data from time domain to frequency domain

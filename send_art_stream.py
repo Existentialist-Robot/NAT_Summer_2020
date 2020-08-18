@@ -39,7 +39,7 @@ def sendingData():
     baseline_delta = np.sin(np.ones((250,)) * (x * (delta_low_bound+2))) * 4
     baseline_theta  = np.sin(np.ones((250,)) * (x * (theta_low_bound+1.5))) * 4
 
-    baseline = np.sum(baseline_alpha, baseline_beta, baseline_delta, baseline_theta)
+    baseline = np.sum(np.array([baseline_alpha, baseline_beta, baseline_delta, baseline_theta]),axis=0)
 
 
     real_fake_alpha = np.sin(np.ones((250,)) * (x * (alpha_low_bound+3))) * 6 
@@ -47,7 +47,7 @@ def sendingData():
     real_fake_delta = np.sin(np.ones((250,)) * (x * (delta_low_bound+2))) * 18
     real_fake_theta = np.sin(np.ones((250,)) * (x * (theta_low_bound+1.5))) * 0
     
-    real_fake_data = np.sum(real_fake_alpha,real_fake_beta,real_fake_delta,real_fake_theta)
+    real_fake_data = np.sum(np.array([real_fake_alpha,real_fake_beta,real_fake_delta,real_fake_theta]),axis=0)
 
 
 # Psuedo-randomized frequency
@@ -88,3 +88,6 @@ def sendingData():
         time.sleep(0.004)
         count += 1
         #print("sending")
+
+if __name__ == '__main__':
+    sendingData()
