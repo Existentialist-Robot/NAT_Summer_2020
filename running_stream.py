@@ -12,8 +12,8 @@ from scipy.signal import butter, lfilter, lfilter_zi, firwin
 from threading import Thread
 from time import sleep
 
-buffer = 250 # sampling rate
-channels = 16
+BUFFER = 250 # sampling rate
+CHANNELS = 16
 
 # Querying open streams matching this name
 print("looking for an EEG stream...")
@@ -26,7 +26,7 @@ print("Start aquiring data")
 stream = streams[0]
 
 # initializing stream, max chunk 1 s
-inlet = StreamInlet(stream, max_chunklen=buffer)
+inlet = StreamInlet(stream, max_chunklen=BUFFER)
 
 # creates a window to draw art on-screen
 class artScreen:
@@ -44,14 +44,14 @@ class artScreen:
         self.window.flip()
 
 
-class CircularBuffer:
+class Circularbuffer:
     def __init__(self, chunks):
         # empty array of channels * (chunks*s) for baseline
-        self.window = np.zeros((channels, buffer*chunks))
+        self.window = np.zeros((CHANNELS, BUFFER*chunks))
         self.chunks = chunks
         self.window_read = self.chunks // 2
         self.window_write = 0
-        self.chunk_size = buffer
+        self.chunk_size = BUFFER
 
     def read(self):
         return self.window
@@ -70,7 +70,7 @@ class Stream (Thread):
     def __init__(self):
         Thread.__init__(self)
 
-        self.buffer = buffer
+        self.buffer = BUFFER
         print("looking for an EEG stream...")
         self.streams = resolve_byprop('type', 'EEG', timeout=2)
 
@@ -80,7 +80,7 @@ class Stream (Thread):
 
         self.stream = self.streams[0]
 
-        self.inlet = StreamInlet(self.stream, max_chunklen-buffer)
+        self.inlet = StreamInlet(self.stream, max_chunklen-BUFFER)
         self.count = 0
         self.chunks = 5
         self.avg_len = 10
