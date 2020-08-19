@@ -44,7 +44,7 @@ class artScreen:
         self.window.flip()
 
 
-class Circularbuffer:
+class CircularBuffer:
     def __init__(self, chunks):
         # empty array of channels * (chunks*s) for baseline
         self.window = np.zeros((CHANNELS, BUFFER*chunks))
