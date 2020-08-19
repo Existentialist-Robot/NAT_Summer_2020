@@ -105,17 +105,17 @@ class Stream (Thread):
                     }
 
         self.low_bound = {
-                        'Delta': lazy_low,
-                        'Theta': lazy_low,
-                        'Alpha': lazy_low,
-                        'Beta': lazy_low
+                        'Delta': self.lazy_low,
+                        'Theta': self.lazy_low,
+                        'Alpha': self.lazy_low,
+                        'Beta': self.lazy_low,
                         }
 
         self.high_bound = {
-                        'Delta': lazy_high,
-                        'Theta': lazy_high,
-                        'Alpha': lazy_high,
-                        'Beta': lazy_high
+                        'Delta': self.lazy_high,
+                        'Theta': self.lazy_high,
+                        'Alpha': self.lazy_high,
+                        'Beta': self.lazy_high
                         }
 
         self._stop_loop = False
