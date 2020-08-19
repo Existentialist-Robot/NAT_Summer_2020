@@ -80,7 +80,7 @@ class Stream (Thread):
 
         self.stream = self.streams[0]
 
-        self.inlet = StreamInlet(self.stream, max_chunklen-BUFFER)
+        self.inlet = StreamInlet(self.stream, max_chunklen=BUFFER)
         self.count = 0
         self.chunks = 5
         self.avg_len = 10
