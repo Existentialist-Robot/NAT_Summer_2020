@@ -132,9 +132,9 @@ class Stream (Thread):
                      'Beta': (16, 31)}
 
         # will store average values for each band
-        avg = dict()
+        self.avg = dict()
         for band in eeg_bands:
-            avg[band] = 0
+            self.avg[band] = 0
 
         # 0.9 if avg_len=10, means that a value's relative contribution to the avg decays to 1/e after 10 iterations
         avg_param = 1 - (1 / self.avg_len)
@@ -163,18 +163,24 @@ class Stream (Thread):
                     band_idx = np.where((fft_freqs >= eeg_bands[band][0]) and (fft_freqs <= eeg_bands[band][1]))[0]
                     freq_val = np.mean(fft_data[band_idx])
 
-                    if (freq_val > avg[band] * self.low_bound[band]) and (freq_val < avg[band] * self.high_bound[band]):
-                        self.noise[band] = True
-                        if freq_val < avg[band]:
+                    if (freq_val > self.avg[band] * self.low_bound[band]) and (freq_val < self.avg[band] * self.high_bound[band]):
+                        self.noise[band] = False
+                        if freq_val < self.avg[band]:
                             self.state[band] = 'Low'
-                        elif freq_val > avg[band]:
+                        elif freq_val > self.avg[band]:
                             self.state[band] = 'High'
                     else:
                         self.noise[band] = False
 
                     # calculate exponentially weighted average for a given band, store in avg
-                    avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
+                    if not self.noise[band]:
+                        self.avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
 
+                    print(band, 'Amplitude: ', freq_val)
+
+                print('State: ', self.state)
+                print('Noise: ', self.noise)
+                print('Average: ', self.avg)
 
 if __name__ == '__main__':
     t = Stream()
