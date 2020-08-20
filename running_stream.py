@@ -12,8 +12,8 @@ from scipy.signal import butter, lfilter, lfilter_zi, firwin
 from threading import Thread
 from time import sleep
 
-BUFFER = 250 # sampling rate
-CHANNELS = 16
+buffer = 250 # sampling rate
+channels = 16
 
 # Querying open streams matching this name
 print("looking for an EEG stream...")
@@ -26,7 +26,7 @@ print("Start aquiring data")
 stream = streams[0]
 
 # initializing stream, max chunk 1 s
-inlet = StreamInlet(stream, max_chunklen=BUFFER)
+inlet = StreamInlet(stream, max_chunklen=buffer)
 
 # creates a window to draw art on-screen
 class artScreen:
@@ -47,11 +47,11 @@ class artScreen:
 class CircularBuffer:
     def __init__(self, chunks):
         # empty array of channels * (chunks*s) for baseline
-        self.window = np.zeros((CHANNELS, BUFFER*chunks))
+        self.window = np.zeros((channels, buffer*chunks))
         self.chunks = chunks
         self.window_read = self.chunks // 2
         self.window_write = 0
-        self.chunk_size = BUFFER
+        self.chunk_size = buffer
 
     def read(self):
         return self.window
@@ -70,7 +70,7 @@ class Stream (Thread):
     def __init__(self):
         Thread.__init__(self)
 
-        self.buffer = BUFFER
+        self.buffer = buffer
         print("looking for an EEG stream...")
         self.streams = resolve_byprop('type', 'EEG', timeout=2)
 
@@ -80,7 +80,7 @@ class Stream (Thread):
 
         self.stream = self.streams[0]
 
-        self.inlet = StreamInlet(self.stream, max_chunklen=BUFFER)
+        self.inlet = StreamInlet(self.stream, max_chunklen-buffer)
         self.count = 0
         self.chunks = 5
         self.avg_len = 10
@@ -108,7 +108,7 @@ class Stream (Thread):
                         'Delta': self.lazy_low,
                         'Theta': self.lazy_low,
                         'Alpha': self.lazy_low,
-                        'Beta': self.lazy_low,
+                        'Beta': self.lazy_low
                         }
 
         self.high_bound = {
@@ -132,9 +132,9 @@ class Stream (Thread):
                      'Beta': (16, 31)}
 
         # will store average values for each band
-        avg = dict()
+        self.avg = dict()
         for band in eeg_bands:
-            avg[band] = 0
+            self.avg[band] = 0
 
         # 0.9 if avg_len=10, means that a value's relative contribution to the avg decays to 1/e after 10 iterations
         avg_param = 1 - (1 / self.avg_len)
@@ -163,18 +163,24 @@ class Stream (Thread):
                     band_idx = np.where((fft_freqs >= eeg_bands[band][0]) and (fft_freqs <= eeg_bands[band][1]))[0]
                     freq_val = np.mean(fft_data[band_idx])
 
-                    if (freq_val > avg[band] * self.low_bound[band]) and (freq_val < avg[band] * self.high_bound[band]):
-                        self.noise[band] = True
-                        if freq_val < avg[band]:
+                    if (freq_val > self.avg[band] * self.low_bound[band]) and (freq_val < self.avg[band] * self.high_bound[band]):
+                        self.noise[band] = False
+                        if freq_val < self.avg[band]:
                             self.state[band] = 'Low'
-                        elif freq_val > avg[band]:
+                        elif freq_val > self.avg[band]:
                             self.state[band] = 'High'
                     else:
-                        self.noise[band] = False
+                        self.noise[band] = True
 
                     # calculate exponentially weighted average for a given band, store in avg
-                    avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
+                    if not self.noise[band]:
+                        self.avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
 
+                    print(band, 'Amplitude: ', freq_val)
+
+                print('State: ', self.state)
+                print('Noise: ', self.noise)
+                print('Average: ', self.avg)
 
 if __name__ == '__main__':
     t = Stream()
