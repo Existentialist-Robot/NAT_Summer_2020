@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessag
 from PyQt5.QtCore import QTimer
 from Image_Manipulation.randomArt import randomArt
 #from randomArt import randomArt
+from multiprocessing import Process
+from running_stream import *
 from PIL.ImageQt import ImageQt
 import sys
 import faulthandler
@@ -73,6 +75,9 @@ def main():
     inputSize[1] = int(inputSize[1])
     # pdb.set_trace()
     # showScreen(inputSize)
+    stream = Stream()
+
+    p = Process(target = stream.run)
     art = artScreen()
     art.artDialog(inputSize)
     sys.exit(qapp.exec_())

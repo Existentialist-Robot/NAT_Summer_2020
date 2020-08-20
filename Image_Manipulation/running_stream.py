@@ -9,39 +9,11 @@ import mne
 import numpy as np
 from pylsl import StreamInlet, resolve_byprop
 from scipy.signal import butter, lfilter, lfilter_zi, firwin
-from threading import Thread
 from time import sleep
 
 buffer = 250 # sampling rate
 channels = 16
 
-# Querying open streams matching this name
-print("looking for an EEG stream...")
-streams = resolve_byprop('type', 'EEG', timeout=2)
-
-if len(streams) == 0:
-    raise(RuntimeError("Cant find EEG stream"))
-print("Start aquiring data")
-
-stream = streams[0]
-
-# initializing stream, max chunk 1 s
-inlet = StreamInlet(stream, max_chunklen=buffer)
-
-# creates a window to draw art on-screen
-class artScreen:
-    def __init__(self,inputSize):
-        self.size = inputSize
-        self.window = visual.Window(size=self.size, pos=[960,540], fullscr=False, allowGUI=True, monitor="testMonitor")
-        self.artImage = visual.ImageStim(self.window)
-        self.artImage.draw(self.window)
-        self.window.flip()
-
-    def updateScreen(self,newImage):
-        """update the art screen"""
-        self.artImage.image = newImage
-        self.artImage.draw(self.window)
-        self.window.flip()
 
 
 class CircularBuffer:
@@ -66,7 +38,7 @@ class CircularBuffer:
         self.window_read = (self.window_read + 1) % self.chunks
 
 
-class Stream (Thread):
+class Stream:
     def __init__(self):
         Thread.__init__(self)
 
