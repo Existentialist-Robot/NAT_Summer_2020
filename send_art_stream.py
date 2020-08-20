@@ -45,8 +45,8 @@ def sendingData():
     baseline = np.sum(np.array([baseline_alpha, baseline_beta, baseline_delta, baseline_theta]).T, axis=1)
 
 
-    real_fake_alpha = np.sin(x * (alpha_low_bound+3))) * 6
-    real_fake_beta = np.sin(x * (beta_low_bound+8))) * 2
+    real_fake_alpha = np.sin(x * (alpha_low_bound+3)) * 6
+    real_fake_beta = np.sin(x * (beta_low_bound+8)) * 2
     real_fake_delta = np.sin(x * (delta_low_bound+2)) * 18
     real_fake_theta = np.sin(x * (theta_low_bound+1.5)) * 0
 
@@ -69,7 +69,7 @@ def sendingData():
     while True:
         # make a new random 16-channel sample; this is converted into a
         # pylsl.vectorf (the data type that is expected by push_sample)
-        if count < 2500:
+        if count < 4500:
             baseline_current = baseline[count % 250]
             mysample = list(np.full(shape=channels, fill_value=baseline_current, dtype=np.int))
 
