@@ -105,17 +105,17 @@ class Stream (Thread):
                     }
 
         self.low_bound = {
-                        'Delta': lazy_low,
-                        'Theta': lazy_low,
-                        'Alpha': lazy_low,
-                        'Beta': lazy_low
+                        'Delta': self.lazy_low,
+                        'Theta': self.lazy_low,
+                        'Alpha': self.lazy_low,
+                        'Beta': self.lazy_low
                         }
 
         self.high_bound = {
-                        'Delta': lazy_high,
-                        'Theta': lazy_high,
-                        'Alpha': lazy_high,
-                        'Beta': lazy_high
+                        'Delta': self.lazy_high,
+                        'Theta': self.lazy_high,
+                        'Alpha': self.lazy_high,
+                        'Beta': self.lazy_high
                         }
 
         self._stop_loop = False
@@ -149,7 +149,7 @@ class Stream (Thread):
                 self.buf.write(data)
 
             # Check that the buffer is filled before creating baseline
-            if self.count >= self.chunks
+            if self.count >= self.chunks:
                 current_data = self.buf.window
 
                 # converts data from time domain to frequency domain
@@ -170,7 +170,7 @@ class Stream (Thread):
                         elif freq_val > self.avg[band]:
                             self.state[band] = 'High'
                     else:
-                        self.noise[band] = False
+                        self.noise[band] = True
 
                     # calculate exponentially weighted average for a given band, store in avg
                     if not self.noise[band]:
