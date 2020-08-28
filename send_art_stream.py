@@ -82,3 +82,6 @@ def sendingData():
         time.sleep(0.004)
         count += 1
         #print("sending")
+
+if __name__ == '__main__':
+    sendingData()
