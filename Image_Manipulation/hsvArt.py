@@ -152,10 +152,10 @@ def hsvArt(size,freqNoise,freqState,artFeatures):
     artFeatures is a dict, storing the art features (hue, saturation, value, line quality) assigned to each bandwidth of brain wave
 
     '''
-
+   
     # the bandwidths in the order of presentation in the Main Window
     freqOrder = ['Beta','Alpha','Theta','Delta']
-
+    
     # unpack size into x and y dimensions
     xdim,ydim = size
 
@@ -178,8 +178,8 @@ def hsvArt(size,freqNoise,freqState,artFeatures):
         imageArray[:,:,:,i][np.where(imageArray[:,:,:,3]==0)] = 0
     # generate image as PIL Image with the HSV mode, but return image in the RGB mode (ImageQt only accepts PIL Image in the RGB mode)
     im = Image.fromarray(imageArray[:,:,:,0:3], mode='HSV')
-    return im
-    # return im.convert(mode='RGB')
+    
+    return im.convert(mode='RGB')
     
 
 def main():
