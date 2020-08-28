@@ -1,7 +1,6 @@
 # Source: https://dsp.stackexchange.com/questions/45345/how-to-correctly-compute-the-eeg-frequency-bands-with-python
 
-# Art screen imports
-from psychopy import visual
+
 
 # EEG imports
 import math
@@ -40,7 +39,7 @@ class CircularBuffer:
 
 class Stream:
     def __init__(self):
-        Thread.__init__(self)
+        
 
         self.buffer = buffer
         print("looking for an EEG stream...")
@@ -52,7 +51,7 @@ class Stream:
 
         self.stream = self.streams[0]
 
-        self.inlet = StreamInlet(self.stream, max_chunklen-buffer)
+        self.inlet = StreamInlet(self.stream, max_chunklen = buffer)
         self.count = 0
         self.chunks = 5
         self.avg_len = 10
@@ -61,20 +60,23 @@ class Stream:
 
 
         self.buf = CircularBuffer(self.chunks)
-
+        
         self.noise = {
                     'Delta': False,
                     'Theta': False,
                     'Alpha': False,
                     'Beta': False
                     }
-
+        
         self.state = {
                     'Delta': 'Low',
                     'Theta': 'Low',
                     'Alpha': 'Low',
                     'Beta': 'Low'
                     }
+        
+        #self.noise = shared_noise_dict
+        #self.state = shared_state_dict
 
         self.low_bound = {
                         'Delta': self.lazy_low,
@@ -97,7 +99,8 @@ class Stream:
         self._stop_loop = True
 
 
-    def run(self):
+    def run(self,q):
+
         eeg_bands = {'Delta': (0, 4),
                      'Theta': (4, 7),
                      'Alpha': (8, 15),
@@ -117,7 +120,7 @@ class Stream:
             if timestamps:
                 data = np.vstack(samples)
                 data = np.transpose(data)
-                print(np.shape(data))
+                
                 self.buf.write(data)
 
             # Check that the buffer is filled before creating baseline
@@ -147,13 +150,16 @@ class Stream:
                     # calculate exponentially weighted average for a given band, store in avg
                     if not self.noise[band]:
                         self.avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
+                    #print(band, 'Amplitude: ', freq_val)
+                q.put('it works')
 
-                    print(band, 'Amplitude: ', freq_val)
+            #debugging       
+                self.state['Random'] = not self.state['Random']
+                    
+                
 
-                print('State: ', self.state)
-                print('Noise: ', self.noise)
-                print('Average: ', self.avg)
+                
+                #print('State: ', self.state)
+                #print('Noise: ', self.noise)
+                #print('Average: ', self.avg)
 
-if __name__ == '__main__':
-    t = Stream()
-    t.start()
