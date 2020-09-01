@@ -1,7 +1,11 @@
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
 from PyQt5.QtCore import QTimer
+<<<<<<< Updated upstream
 from randomArt import randomArt
+=======
+from randomArt import *
+>>>>>>> Stashed changes
 #from randomArt import randomArt
 from multiprocessing import Process,Manager,set_start_method,Pool,Queue
 from running_stream import *
