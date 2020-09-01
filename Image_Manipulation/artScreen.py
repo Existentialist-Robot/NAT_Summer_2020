@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessag
 from PyQt5.QtCore import QTimer
 from randomArt import *
 #from randomArt import randomArt
-from multiprocessing import Process,Manager,set_start_method,Pool,Queue
+from multiprocessing import Process, Queue
 from running_stream import *
 from PIL.ImageQt import ImageQt
 import sys
@@ -11,7 +11,7 @@ import faulthandler
 import pdb
 from hsvArt import *
 
-set_start_method('spawn', force=True) #needed to run on UNIX 
+
 
 class artScreen(QDialog):
 
@@ -50,13 +50,18 @@ class artScreen(QDialog):
         """ Update the art screen"""
         """ newImage is a PIL Image object of the new image to be displayed """
         # pdb.set_trace()
-        #newImage = randomArt(self.size)
         
-        print(q.get())
+        
         artFeatures = [0,1,2,3] #artFeature copied from hsvArt.py main function
 
-        #newImage = hsvArt(self.size, shared_noise_dict, shared_state_dict, artFeatures) #create newImage from hsvArt func
+        if not q.empty():
+            state_dict,noise_dict = q.get()
+            print(state_dict)
+            newImage = hsvArt(self.size, noise_dict, state_dict, artFeatures) #create newImage from hsvArt fun
+        else:
+            newImage = randomArt(self.size)
 
+        
         self.qim = ImageQt(newImage)
         pix = QPixmap.fromImage(self.qim)
         self.imageLabel.setPixmap(pix)
@@ -64,17 +69,26 @@ class artScreen(QDialog):
         self.raise_()
         self.show()
 
+        
+
     def closeEvent(self, event):
         reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?',
                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
             event.accept()
+            run_process.terminate() #if we close the window the spawned child process terminates
             print('Window closed')
         else:
             event.ignore()
 
-
+def spawned_process(q):
+    '''
+    initialize stream object and run stream.run method
+    this will be the target of the stream_process
+    '''
+    stream = Stream()
+    stream.run(q)
 
 def main():
     if QApplication.instance():
@@ -90,44 +104,24 @@ def main():
     # pdb.set_trace()
     # showScreen(inputSize)
 
-    #initialize shared dictionaries for hsvArt and stream.run to use
-    
-    '''
-    shared_noise_dict = manager.dict()
-    shared_noise_dict['Delta']= False
-    shared_noise_dict['Theta']= False
-    shared_noise_dict['Alpha']=False 
-    shared_noise_dict['Beta']= False
-    
-
-    
-    shared_state_dict = manager.dict()
-    shared_state_dict['Delta'] = 'low'
-    shared_state_dict['Theta'] = 'low'                
-    shared_state_dict['Alpha'] = 'low'
-    shared_state_dict['Beta'] = 'low'
-    shared_state_dict['Random'] = False
-    '''
-    stream = Stream()
+    #initialize multiprocessing queue to allow data transfer between child process
     q = Queue(5)
 
-    #run_process = Process(target = stream.run)
-    #run_process.start() 
-    pool = Pool(processes = 4)
-    pool.apply_async(stream.run, args = (q,))
-
-
+    #initialize run_process for parallelism and make the variable global to allow 
+    #exiting to make terminate the child process
+    global run_process
+    run_process = Process(target = spawned_process, args = (q,))
 
     
+    run_process.start() 
     
     art = artScreen()
     art.artDialog(inputSize,q)
-    #art_process = Process(target = art.artDialog, args = (inputSize,shared_noise_dict,shared_state_dict))
-    #art_process.start()
-    sys.exit(qapp.exec_())
 
-    pool.close()
-    #run_process.join()
+    sys.exit(qapp.exec_())
+    
+    
+
 if __name__=='__main__':
     main()
     

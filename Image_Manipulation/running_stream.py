@@ -9,7 +9,7 @@ import numpy as np
 from pylsl import StreamInlet, resolve_byprop
 from scipy.signal import butter, lfilter, lfilter_zi, firwin
 from time import sleep
-
+from multiprocessing import Queue
 buffer = 250 # sampling rate
 channels = 16
 
@@ -74,9 +74,6 @@ class Stream:
                     'Alpha': 'Low',
                     'Beta': 'Low'
                     }
-        
-        #self.noise = shared_noise_dict
-        #self.state = shared_state_dict
 
         self.low_bound = {
                         'Delta': self.lazy_low,
@@ -117,7 +114,7 @@ class Stream:
         while True:
             # Sample is a 2d array of [ [channel_i]*channels ] * buffer
             samples, timestamps = self.inlet.pull_chunk(timeout=2.0, max_samples=self.buffer)
-            
+            print(len(samples))
             if timestamps:
                 data = np.vstack(samples)
                 data = np.transpose(data)
@@ -152,15 +149,14 @@ class Stream:
                     if not self.noise[band]:
                         self.avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
                     #print(band, 'Amplitude: ', freq_val)
-                q.put('it works')
-
-            #debugging       
-                self.state['Random'] = not self.state['Random']
                     
+            #send state and noise dicts to main process
+            q.put((self.state,self.noise))
+            
+            
                 
 
                 
                 #print('State: ', self.state)
                 #print('Noise: ', self.noise)
                 #print('Average: ', self.avg)
-
