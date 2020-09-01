@@ -95,8 +95,8 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         raws = concatenate_raws(raw, verbose=verbose)
     return raws
 
-def load_data(subject_nb=1, session_nb=1, sfreq=256.,
-              ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], stim_ind=16, replace_ch_names=None, verbose=1):
+def load_data(sfreq=256.,ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 
+              stim_ind=16, replace_ch_names=None, verbose=1):
     """Load CSV files from the /data directory into a Raw object.
 
     Args:
@@ -117,13 +117,13 @@ def load_data(subject_nb=1, session_nb=1, sfreq=256.,
     Returns:
         (mne.io.array.array.RawArray): loaded EEG
     """
-    if subject_nb == 'all':
+    '''if subject_nb == 'all':
         subject_nb = '*'
     if session_nb == 'all':
         session_nb = '*'
-    
-    recording_path = os.path.join(Path().absolute(), "data", "subject" + "_" + str(subject_nb), "session" + "_" + str(session_nb))
-    filename = '*.csv'
+    '''
+    recording_path = os.path.join(Path().absolute(), "data")
+    filename = '*.txt'
     data_path = os.path.join(recording_path, filename)
     fnames = glob(data_path)
     print(len(fnames))
