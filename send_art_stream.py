@@ -24,7 +24,7 @@ def sendingData():
     print("now sending data...")
 
     alpha_low_bound = 8
-    beta_low_bound = 16
+    beta_low_bound = 15
     delta_low_bound = 0
     theta_low_bound = 4
 

@@ -117,6 +117,7 @@ class Stream:
         while True:
             # Sample is a 2d array of [ [channel_i]*channels ] * buffer
             samples, timestamps = self.inlet.pull_chunk(timeout=2.0, max_samples=self.buffer)
+            
             if timestamps:
                 data = np.vstack(samples)
                 data = np.transpose(data)
