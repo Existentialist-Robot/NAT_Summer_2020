@@ -91,6 +91,7 @@ def spawned_process(q):
     stream.run(q)
 
 def main():
+    
     if QApplication.instance():
         qapp = QApplication.instance()
     else:

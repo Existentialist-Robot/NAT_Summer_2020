@@ -182,7 +182,7 @@ def hsvArt(size,freqNoise,freqState,artFeatures):
     return im.convert(mode='RGB')
     
 
-def main():
+def hsv_main():
 
     size=[400,400]
 
@@ -233,4 +233,4 @@ def main():
                 freqState[wave] = 'High'
 
 if __name__ == '__main__':
-    main()
+    hsv_main()
