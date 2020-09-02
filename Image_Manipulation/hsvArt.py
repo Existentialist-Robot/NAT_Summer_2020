@@ -178,11 +178,11 @@ def hsvArt(size,freqNoise,freqState,artFeatures):
         imageArray[:,:,:,i][np.where(imageArray[:,:,:,3]==0)] = 0
     # generate image as PIL Image with the HSV mode, but return image in the RGB mode (ImageQt only accepts PIL Image in the RGB mode)
     im = Image.fromarray(imageArray[:,:,:,0:3], mode='HSV')
-    return im
-    # return im.convert(mode='RGB')
+    #return im
+    return im.convert(mode='RGB')
     
 
-def main():
+def hsv_main():
 
     size=[400,400]
 
@@ -233,4 +233,4 @@ def main():
                 freqState[wave] = 'High'
 
 if __name__ == '__main__':
-    main()
+    hsv_main()

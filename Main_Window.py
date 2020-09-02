@@ -1,20 +1,22 @@
 import sys
 import time
 
-from multiprocessing import Process, cpu_count
-from multiprocessing import Pool
+from multiprocessing import Process
+import dill
+#from pathos.multiprocessing import Process
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout
 from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox
 from PyQt5.QtWidgets import QInputDialog, QDialog
 from PyQt5.QtGui import QFont, QPixmap, QIcon, QImage, QPalette, QBrush, QPainter
 from PyQt5.QtCore import Qt, QSize
-from Image_Manipulation.artScreen import artScreen
+from Image_Manipulation.artScreen import launchArtScreen
 #from Image_Manipulation.showArtScreen import showScreen
-from Image_Manipulation.randomArt import randomArt
+#from Image_Manipulation.randomArt import randomArt
 import stroopy_words
 import record
-import send
+#import send
+import send_art_stream
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -28,17 +30,6 @@ class MainWindow(QMainWindow):
         #self.setStyleSheet("QMainWindow { background: url(Images/Background.jpg) center center cover no-repeat fixed; color: white }")
         self.setStyleSheet("QMainWindow { border-image: url(Images/Background.jpg) center center cover no-repeat; color: white }")
         self.setWindowIcon(QIcon('Images\Icon.png'))
-
-        #background-color: black;
-
-        #painter = QPainter(self)
-        #painter.drawRect(self.rect())
-        #background = QPixmap('Images\Background.jpg')
-        #painter.drawPixmap(self.rect(), background)
-        #sbackground = background.scaled(QSize(800, 400))
-        #palette = QPalette()
-        #palette.setBrush(10, QBrush(background))
-        #self.setPalette(palette)
 
         # ~~~Main window contents~~~
 
@@ -112,16 +103,16 @@ class MainWindow(QMainWindow):
         artFeatures4 = QComboBox()
         addFeatures(artFeatures4)
 
-        currentStates = [0, 1, 2, 3]
-        print(currentStates)
+        #currentFeatures = [0, 1, 2, 3]   # 0 = Hue, 1 = Saturation, 2 = Value, 3 = Line Quality
+        print(currentFeatures)
 
-        def setStates():
-            artFeatures1.setCurrentIndex(currentStates[0])
-            artFeatures2.setCurrentIndex(currentStates[1])
-            artFeatures3.setCurrentIndex(currentStates[2])
-            artFeatures4.setCurrentIndex(currentStates[3])
+        def setFeatures():
+            artFeatures1.setCurrentIndex(currentFeatures[0])
+            artFeatures2.setCurrentIndex(currentFeatures[1])
+            artFeatures3.setCurrentIndex(currentFeatures[2])
+            artFeatures4.setCurrentIndex(currentFeatures[3])
         
-        setStates()
+        setFeatures()
 
         def changeFeatures(index):
             if index == 0:
@@ -133,12 +124,12 @@ class MainWindow(QMainWindow):
             if index == 3:
                 wave = artFeatures4
             new = wave.currentIndex() # set new = 1
-            old = currentStates[index] #get old value
-            change = currentStates.index(new) #find last position of 1
-            currentStates[change] = old # change found position to old value in map
-            currentStates[index] = new # change old value to new value in map
-            print(currentStates)
-            setStates()
+            old = currentFeatures[index] #get old value
+            change = currentFeatures.index(new) #find last position of 1
+            currentFeatures[change] = old # change found position to old value in map
+            currentFeatures[index] = new # change old value to new value in map
+            print(currentFeatures)
+            setFeatures()
 
         artFeatures1.currentIndexChanged.connect(lambda: changeFeatures(0)) #if 0 changed to 1
         artFeatures2.currentIndexChanged.connect(lambda: changeFeatures(1)) #if 0 changed to 1
@@ -215,10 +206,21 @@ class MainWindow(QMainWindow):
 
 
     def open_artScreen(self):
+        global currentFeatures
+        global freqNoise
+        global freqState
+
+        #initialize multiprocessing queue to allow data transfer between child process
+        #q = Queue(5)
+        #global run_process
+        #run_process = Process(target = spawned_process, args = (q,))
+        #run_process.start() 
         art_screen_size = [526,526]
-        art = artScreen()
-        art.artDialog(art_screen_size)
-        art.exec_()
+        #art = artScreen()
+        launchArtScreen(art_screen_size, currentFeatures)
+        #art.artDialog(art_screen_size, freqNoise, freqState, currentFeatures)
+        #art.artDialog(art_screen_size, currentFeatures)
+        #art.exec_()
         
 
     def RecordBaseline(self):
@@ -254,12 +256,26 @@ class MainWindow(QMainWindow):
                 print("baseline task complete")
 
   
-features = ["Feature 1",
-            "Feature 2",
-            "Feature 3",
-            "Feature 4",
+features = ["Hue",
+            "Saturation",
+            "Value",
+            "Line Quality",
             ]
+currentFeatures = [0, 1, 2, 3]   # 0 = Hue, 1 = Saturation, 2 = Value, 3 = Line Quality
 
+freqNoise = {
+    'Delta': False,
+    'Theta': False,
+    'Alpha': False,
+    'Beta': False
+}
+
+freqState = {
+    'Delta': 'Low',
+    'Theta': 'Low',
+    'Alpha': 'Low',
+    'Beta': 'Low'
+}
 sending = 0
 stimulus = 0
 recording = 0
@@ -268,7 +284,7 @@ ready_baseline = 0
 def sendData():
     global sending
     global ready_baseline
-    sending = Process(target=send.sendingData)
+    sending = Process(target=send_art_stream.sendingData)
     sending.daemon = True
     print(sending, sending.is_alive())
     sending.start()
