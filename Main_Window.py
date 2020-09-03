@@ -1,21 +1,15 @@
 import sys
 import time
-
 from multiprocessing import Process
-import dill
-#from pathos.multiprocessing import Process
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout
 from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox
-from PyQt5.QtWidgets import QInputDialog, QDialog
+from PyQt5.QtWidgets import QInputDialog, QDialog, QDesktopWidget
 from PyQt5.QtGui import QFont, QPixmap, QIcon, QImage, QPalette, QBrush, QPainter
 from PyQt5.QtCore import Qt, QSize
 from Image_Manipulation.artScreen import launchArtScreen
-#from Image_Manipulation.showArtScreen import showScreen
-#from Image_Manipulation.randomArt import randomArt
 import stroopy_words
 import record
-#import send
 import send_art_stream
 
 class MainWindow(QMainWindow):
@@ -30,6 +24,9 @@ class MainWindow(QMainWindow):
         #self.setStyleSheet("QMainWindow { background: url(Images/Background.jpg) center center cover no-repeat fixed; color: white }")
         self.setStyleSheet("QMainWindow { border-image: url(Images/Background.jpg) center center cover no-repeat; color: white }")
         self.setWindowIcon(QIcon('Images\Icon.png'))
+
+        self.screenResolution = QDesktopWidget().screenGeometry()
+        self.width, self.height = self.screenResolution.width(), self.screenResolution.height()
 
         # ~~~Main window contents~~~
 
@@ -103,9 +100,6 @@ class MainWindow(QMainWindow):
         artFeatures4 = QComboBox()
         addFeatures(artFeatures4)
 
-        #currentFeatures = [0, 1, 2, 3]   # 0 = Hue, 1 = Saturation, 2 = Value, 3 = Line Quality
-        print(currentFeatures)
-
         def setFeatures():
             artFeatures1.setCurrentIndex(currentFeatures[0])
             artFeatures2.setCurrentIndex(currentFeatures[1])
@@ -135,6 +129,9 @@ class MainWindow(QMainWindow):
         artFeatures2.currentIndexChanged.connect(lambda: changeFeatures(1)) #if 0 changed to 1
         artFeatures3.currentIndexChanged.connect(lambda: changeFeatures(2)) #if 0 changed to 1
         artFeatures4.currentIndexChanged.connect(lambda: changeFeatures(3)) #if 0 changed to 1
+
+
+
 
         # Create window layout and add components
 
@@ -207,20 +204,23 @@ class MainWindow(QMainWindow):
 
     def open_artScreen(self):
         global currentFeatures
-        global freqNoise
-        global freqState
-
-        #initialize multiprocessing queue to allow data transfer between child process
-        #q = Queue(5)
-        #global run_process
-        #run_process = Process(target = spawned_process, args = (q,))
-        #run_process.start() 
-        art_screen_size = [526,526]
-        #art = artScreen()
+        #screenSize = QMessageBox()
+        #options = [()]
+        #screenSize = QInputDialog()
+        #screenSize.setText("Choose art screen size.")
+        #screenSize.setWindowTitle("Screen Size")
+        #screenSize.setStandardButtons(QMessageBox.OK | QMessageBox.Cancel)
+        #art_screen_size = [1080, 1080] #1.0
+        #art_screen_size = [1728, 972] #0.9
+        #art_screen_size = [1440, 729] #0.75
+        #art_screen_size = [540, 960] #0.5
+        #art_screen_size = [1080, 1080] #1.0
+        #art_screen_size = [972, 972] #0.9
+        #art_screen_size = [729, 729] #0.75
+        art_screen_size = [540, 540] #0.5
+        #art_screen_size = [self.width, self.height]
+        print(art_screen_size)
         launchArtScreen(art_screen_size, currentFeatures)
-        #art.artDialog(art_screen_size, freqNoise, freqState, currentFeatures)
-        #art.artDialog(art_screen_size, currentFeatures)
-        #art.exec_()
         
 
     def RecordBaseline(self):
@@ -251,8 +251,8 @@ class MainWindow(QMainWindow):
                     time.sleep(0.5)
                     print("waiting")
                 print("ok, finished")
-                #stimulus.close()
-                #recording.close()
+                stimulus.close()
+                recording.close()
                 print("baseline task complete")
 
   
@@ -263,19 +263,6 @@ features = ["Hue",
             ]
 currentFeatures = [0, 1, 2, 3]   # 0 = Hue, 1 = Saturation, 2 = Value, 3 = Line Quality
 
-freqNoise = {
-    'Delta': False,
-    'Theta': False,
-    'Alpha': False,
-    'Beta': False
-}
-
-freqState = {
-    'Delta': 'Low',
-    'Theta': 'Low',
-    'Alpha': 'Low',
-    'Beta': 'Low'
-}
 sending = 0
 stimulus = 0
 recording = 0

@@ -88,7 +88,7 @@ class Stream:
             # Sample is a 2d array of [ [channel_i]*channels ] * buffer
             samples, timestamps = self.inlet.pull_chunk(timeout=2.0, max_samples=self.buffer)
             print(len(samples))
-
+            
             if timestamps:
                 data = np.vstack(samples)
                 data = np.transpose(data)
@@ -103,9 +103,9 @@ class Stream:
                 bias_correction = 1 - (avg_param**(self.count-self.chunks+1)) # prevents skew in avg during early iterations
                 # for each band, identify measurements corresponding to appropriate frequency, average across channels
                 for band in eeg_bands:
-                    band_idx = np.where((fft_freqs >= eeg_bands[band][0]) and (fft_freqs <= eeg_bands[band][1]))[0]
+                    band_idx = np.where((fft_freqs >= eeg_bands[band][0]) & (fft_freqs <= eeg_bands[band][1]))[0]
                     freq_val = np.mean(fft_data[band_idx])
-                    if (freq_val > self.avg[band] * self.low_bound[band]) and (freq_val < self.avg[band] * self.high_bound[band]):
+                    if (freq_val > self.avg[band] * self.low_bound[band]) & (freq_val < self.avg[band] * self.high_bound[band]):
                         self.noise[band] = False
                         if freq_val < self.avg[band]:
                             self.state[band] = 'Low'
@@ -119,6 +119,8 @@ class Stream:
                     #print(band, 'Amplitude: ', freq_val)
             #send state and noise dicts to main process
             q.put((self.state,self.noise))
+            self.count += 1
+            
 
 
 
