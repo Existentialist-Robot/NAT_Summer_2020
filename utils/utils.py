@@ -418,7 +418,8 @@ def PreProcess(raw, event_id, plot_psd=False, filter_data=True,
 
   ## plot ERP at each electrode
   evoked_dict = {event_names[0]:epochs[event_names[0]].average(),
-                              event_names[1]:epochs[event_names[1]].average()}
+                event_names[1]:epochs[event_names[1]].average(),
+                event_names[2]:epochs[event_names[2]].average()}
 
   # butterfly plot
   if plot_electrodes:
