@@ -48,7 +48,7 @@ sns.set_context('talk')
 sns.set_style('white')
 
 
-def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],                         stim_ind=16, replace_ch_names=None, verbose=1):
+def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], stim_ind=16, replace_ch_names=None, verbose=1):
     """Load CSV files into a Raw object.
 
     Args:
@@ -368,7 +368,7 @@ def PreProcess(raw, event_id, plot_psd=False, filter_data=True,
     filter_range[1] = nsfreq/2.5  #lower than 2 to avoid aliasing from decim??
 
   #pull event names in order of trigger number
-  event_names = ['A_error','B_error']
+  event_names = ['A_error','B_error','C_error']
   i = 0
   for key, value in sorted(event_id.items(), key=lambda x: (x[1], x[0])):
     event_names[i] = key
