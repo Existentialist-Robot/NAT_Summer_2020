@@ -18,7 +18,7 @@ from mne import pick_types, viz, io, Epochs, create_info
 from mne import pick_channels, concatenate_epochs
 from mne.datasets import sample
 from mne.simulation import simulate_sparse_stc, simulate_raw
-from mne.channels import read_montage, make_standard_montage, read_custom_montage
+from mne.channels import make_standard_montage, read_custom_montage
 from mne.time_frequency import tfr_morlet
 
 import pandas as pd
