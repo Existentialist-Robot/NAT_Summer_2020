@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 from numpy.random import seed
 seed(1017)
-from tensorflow.random import set_seed
-set_seed(1017)
+import tensorflow as tf
+tf.random.set_seed(1017)
 
 
 from glob import glob
@@ -33,13 +32,13 @@ import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt
 plt.rcParams["figure.figsize"] = (12,12)
 
-import keras
-from keras import regularizers
-from keras.callbacks import TensorBoard
-from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Activation, Input
-from keras.layers import Flatten, Conv2D, MaxPooling2D, LSTM
-from keras.layers import BatchNormalization, Conv3D, MaxPooling3D
+
+from tensorflow.keras import regularizers
+from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense, Dropout, Activation, Input
+from tensorflow.keras.layers import Flatten, Conv2D, MaxPooling2D, LSTM
+from tensorflow.keras.layers import BatchNormalization, Conv3D, MaxPooling3D
 
 from sklearn.utils import class_weight
 from sklearn.model_selection import train_test_split
