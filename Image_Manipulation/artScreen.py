@@ -1,29 +1,15 @@
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
-<<<<<<< HEAD
-from PyQt5.QtCore import QTimer
-from randomArt import *
-#from randomArt import randomArt
-from multiprocessing import Process, Queue
-from running_stream import *
-=======
 
 from PyQt5.QtCore import QTimer, Qt
 from multiprocessing import Process, Queue
 from running_stream import *
 
->>>>>>> upstream/master
 from PIL.ImageQt import ImageQt
 import sys
 import numpy as np
 import pdb
-<<<<<<< HEAD
-from hsvArt import *
-
-
-=======
 from circleArt import circleArt
->>>>>>> upstream/master
 
 class artScreen(QDialog):
 
@@ -31,18 +17,6 @@ class artScreen(QDialog):
     """ inputSize is a list or a tuple of the width and the height of the screen """
     """ App is the PyQt5.QtCore.QApplication object for the main app """
 
-<<<<<<< HEAD
-    def artDialog(self, inputSize,q):
-        self.size = inputSize
-        self.initUI()
-        # Set timer for a set interval
-        timer = QTimer(self)
-        timer.timeout.connect(lambda: self.updateScreen(q))
-        timer.start(300)  # in milliseconds e.g. 1000 = 1 sec
-
-        
-        
-=======
     def artDialog(self, inputSize, artFeatures, q):
         
         # initialize an array for the image -- x by y arrays of 3-item arrays for the HSV values of each pixel in the image
@@ -55,7 +29,6 @@ class artScreen(QDialog):
         timer = QTimer(self)
         timer.timeout.connect(lambda: self.updateScreen(q))
         timer.start(1000)  # in milliseconds e.g. 1000 = 1 sec
->>>>>>> upstream/master
 
             # set timer for creating a pulsating illusion on the image
         pulseTimer = QTimer(self)
@@ -74,25 +47,6 @@ class artScreen(QDialog):
         self.setLayout(self.hbox)
         self.raise_()
         self.show()
-<<<<<<< HEAD
-   
-    def updateScreen(self,q):
-        """ Update the art screen"""
-        """ newImage is a PIL Image object of the new image to be displayed """
-        # pdb.set_trace()
-        
-        
-        artFeatures = [0,1,2,3] #artFeature copied from hsvArt.py main function
-
-        if not q.empty():
-            state_dict,noise_dict = q.get()
-            print(state_dict)
-            newImage = hsvArt(self.size, noise_dict, state_dict, artFeatures) #create newImage from hsvArt fun
-        else:
-            newImage = randomArt(self.size)
-
-        
-=======
 
     def updateScreen(self,q,pulse=True):
 
@@ -107,7 +61,6 @@ class artScreen(QDialog):
         else:
             newImage = circleArt(self.imageArray,pulse=pulse)
 
->>>>>>> upstream/master
         self.qim = ImageQt(newImage)
         pix = QPixmap.fromImage(self.qim)
         self.imageLabel.setPixmap(pix)
@@ -115,11 +68,6 @@ class artScreen(QDialog):
         self.raise_()
         self.show()
 
-<<<<<<< HEAD
-        
-=======
-
->>>>>>> upstream/master
 
     def closeEvent(self, event):
         #global run_process
@@ -157,30 +105,9 @@ def main():
     inputSize = inputSize.split(',')
     inputSize[0] = int(inputSize[0])
     inputSize[1] = int(inputSize[1])
-<<<<<<< HEAD
-
-    # pdb.set_trace()
-    # showScreen(inputSize)
-
-    #initialize multiprocessing queue to allow data transfer between child process
-    q = Queue(5)
-
-    #initialize run_process for parallelism and make the variable global to allow 
-    #exiting to make terminate the child process
-    global run_process
-    run_process = Process(target = spawned_process, args = (q,))
-
-    
-    run_process.start() 
-    
-    art = artScreen()
-    art.artDialog(inputSize,q)
-
-=======
     launchArtScreen(inputSize)
     # pdb.set_trace()
     # showScreen(inputSize)
->>>>>>> upstream/master
     sys.exit(qapp.exec_())
     
     
@@ -203,8 +130,3 @@ q = Queue(5)
 
 if __name__=='__main__':
     main()
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> upstream/master

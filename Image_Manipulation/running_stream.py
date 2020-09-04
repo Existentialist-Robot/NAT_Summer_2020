@@ -1,10 +1,4 @@
 # Source: https://dsp.stackexchange.com/questions/45345/how-to-correctly-compute-the-eeg-frequency-bands-with-python
-<<<<<<< HEAD:Image_Manipulation/running_stream.py
-
-
-
-=======
->>>>>>> upstream/master:running_stream.py
 # EEG imports
 import math
 import numpy as np
@@ -15,11 +9,6 @@ from multiprocessing import Queue
 buffer = 250 # sampling rate
 channels = 16
 
-<<<<<<< HEAD:Image_Manipulation/running_stream.py
-
-
-=======
->>>>>>> upstream/master:running_stream.py
 class CircularBuffer:
     def __init__(self, chunks):
         # empty array of channels * (chunks*s) for baseline
@@ -37,18 +26,9 @@ class CircularBuffer:
         self.window[:, chunk_start:chunk_end] = data
         self.window_write = (self.window_write + 1) % self.chunks
         self.window_read = (self.window_read + 1) % self.chunks
-<<<<<<< HEAD:Image_Manipulation/running_stream.py
-
-
 class Stream:
     def __init__(self):
         
-
-=======
-class Stream:
-    def __init__(self):
-        
->>>>>>> upstream/master:running_stream.py
         self.buffer = buffer
         print("looking for an EEG stream...")
         self.streams = resolve_byprop('type', 'EEG', timeout=2)
@@ -56,10 +36,6 @@ class Stream:
             raise(RuntimeError("Cant find EEG stream"))
         print("Start aquiring data")
         self.stream = self.streams[0]
-<<<<<<< HEAD:Image_Manipulation/running_stream.py
-
-=======
->>>>>>> upstream/master:running_stream.py
         self.inlet = StreamInlet(self.stream, max_chunklen = buffer)
         self.count = 0
         self.chunks = 5
@@ -97,14 +73,7 @@ class Stream:
         self._stop_loop = False
     def stop(self):
         self._stop_loop = True
-<<<<<<< HEAD:Image_Manipulation/running_stream.py
-
-
     def run(self,q):
-
-=======
-    def run(self,q):
->>>>>>> upstream/master:running_stream.py
         eeg_bands = {'Delta': (0, 4),
                      'Theta': (4, 7),
                      'Alpha': (8, 15),
@@ -119,10 +88,7 @@ class Stream:
             # Sample is a 2d array of [ [channel_i]*channels ] * buffer
             samples, timestamps = self.inlet.pull_chunk(timeout=2.0, max_samples=self.buffer)
             print(len(samples))
-<<<<<<< HEAD:Image_Manipulation/running_stream.py
-=======
             
->>>>>>> upstream/master:running_stream.py
             if timestamps:
                 data = np.vstack(samples)
                 data = np.transpose(data)
@@ -151,19 +117,6 @@ class Stream:
                     if not self.noise[band]:
                         self.avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
                     #print(band, 'Amplitude: ', freq_val)
-<<<<<<< HEAD:Image_Manipulation/running_stream.py
-                    
-            #send state and noise dicts to main process
-            q.put((self.state,self.noise))
-            
-            
-                
-
-                
-                #print('State: ', self.state)
-                #print('Noise: ', self.noise)
-                #print('Average: ', self.avg)
-=======
             #send state and noise dicts to main process
             q.put((self.state,self.noise))
             self.count += 1
@@ -176,4 +129,3 @@ class Stream:
                 #print('State: ', self.state)
                 #print('Noise: ', self.noise)
                 #print('Average: ', self.avg)
->>>>>>> upstream/master:running_stream.py
