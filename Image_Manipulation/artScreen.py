@@ -17,13 +17,11 @@ class artScreen(QDialog):
     """ inputSize is a list or a tuple of the width and the height of the screen """
     """ App is the PyQt5.QtCore.QApplication object for the main app """
 
-    def artDialog(self, inputSize):
-
+    def artDialog(self, inputSize, artFeatures, q):
+        
         # initialize an array for the image -- x by y arrays of 3-item arrays for the HSV values of each pixel in the image
         self.imageArray = np.zeros((inputSize[0],inputSize[1],3),dtype=np.uint8)
-        
 
-    def artDialog(self, inputSize, artFeatures, q):
         self.size = inputSize
         self.artFeatures = artFeatures
         self.initUI()
