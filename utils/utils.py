@@ -83,8 +83,8 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         ch_types = ['eeg'] * n_channel + ['stim']
         # get data and exclude Aux channel
         data = data.values[:, ch_ind + [stim_ind]].T
-        # convert in Volts (from nanoVolts)
-        data[:-1] *= 1e-9
+        # convert in Volts (from uVolts)
+        data[:-1] *= 1e-6
         montage = make_standard_montage('standard_1005')
         info = create_info(ch_names=ch_names, ch_types=ch_types,
                             sfreq=sfreq, verbose=verbose)
