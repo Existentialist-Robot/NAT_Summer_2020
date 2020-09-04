@@ -355,7 +355,7 @@ def GrattonEmcpEpochs(epochs):
 
 def PreProcess(raw, event_id, plot_psd=False, filter_data=True,
                filter_range=(1,30), plot_events=False, epoch_time=(-.2,1),
-               baseline=(-.2,0), rej_thresh_uV=200, rereference=False, 
+               baseline=(-.2,0), rej_thresh_uV=300, rereference=False, 
                emcp_raw=False, emcp_epochs=False, epoch_decim=1, plot_electrodes=False,
                plot_erp=False):
 
@@ -729,7 +729,7 @@ def FeatureEngineer(epochs, model_type='NN',
                 wavelet_decim=1, flims=(3,30), include_phase=False,
                 f_bins=20, wave_cycles=3, 
                 wavelet_electrodes = [11,12,13,14,15],
-                spect_baseline=[-1,-.5],
+                spect_baseline=[-1,0],
                 test_split = 0.2, val_split = 0.2,
                 random_seed=1017, watermark = False):
 
