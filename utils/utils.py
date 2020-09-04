@@ -752,8 +752,8 @@ def FeatureEngineer(epochs, model_type='NN',
   np.random.seed(random_seed)
 
   #pull event names in order of trigger number
-  epochs.event_id = {'cond0':1, 'cond1':2}
-  event_names = ['cond0','cond1']
+  epochs.event_id = {'cond0':1, 'cond1':2,'cond3':3}
+  event_names = ['cond0','cond1','cond3']
   i = 0
   for key, value in sorted(epochs.event_id.items(),
                            key=lambda item: (item[1],item[0])):
