@@ -26,6 +26,7 @@ class CircularBuffer:
         self.window[:, chunk_start:chunk_end] = data
         self.window_write = (self.window_write + 1) % self.chunks
         self.window_read = (self.window_read + 1) % self.chunks
+    
 class Stream:
     def __init__(self):
         
@@ -73,7 +74,7 @@ class Stream:
         self._stop_loop = False
     def stop(self):
         self._stop_loop = True
-    def run(self,q):
+    def run(self,band_q,model_q):
         eeg_bands = {'Delta': (0, 4),
                      'Theta': (4, 7),
                      'Alpha': (8, 15),
@@ -87,16 +88,17 @@ class Stream:
         while True:
             # Sample is a 2d array of [ [channel_i]*channels ] * buffer
             samples, timestamps = self.inlet.pull_chunk(timeout=2.0, max_samples=self.buffer)
-            print(len(samples))
+            
             
             if timestamps:
                 data = np.vstack(samples)
                 data = np.transpose(data)
-                
+                print(data.shape)
                 self.buf.write(data)
             # Check that the buffer is filled before creating baseline
             if self.count >= self.chunks:
                 current_data = self.buf.window
+                print(current_data.shape)
                 # converts data from time domain to frequency domain
                 fft_data = np.absolute(np.fft.rfft(current_data))
                 fft_freqs = np.fft.rfftfreq(len(current_data.T), 1.0/buffer)
@@ -117,8 +119,18 @@ class Stream:
                     if not self.noise[band]:
                         self.avg[band] = ((avg_param * avg[band]) + ((1 - avg_param) * freq_val)) / bias_correction
                     #print(band, 'Amplitude: ', freq_val)
+                
+                #send chunk to model
+                if not model_q.full():
+                    model_q.put(current_data)
+
             #send state and noise dicts to main process
-            q.put((self.state,self.noise))
+            if not band_q.full():
+                band_q.put((self.state,self.noise))
+
+            
+            
+
             self.count += 1
             
 
@@ -129,3 +141,8 @@ class Stream:
                 #print('State: ', self.state)
                 #print('Noise: ', self.noise)
                 #print('Average: ', self.avg)
+if __name__ == '__main__':
+    m_q = Queue(4)
+    b_q = Queue(4)
+    stream = Stream()
+    stream.run(b_q,m_q)
