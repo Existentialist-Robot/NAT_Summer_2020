@@ -2,3 +2,4 @@
 Image_Manipulation/__pycache__/artScreen.cpython-36.pyc
 Image_Manipulation/output.bmp
 Image_Manipulation/example.py
+Image_Manipulation/bitplane/bin_images/*

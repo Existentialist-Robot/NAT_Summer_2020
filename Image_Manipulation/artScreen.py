@@ -1,12 +1,11 @@
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
 from PyQt5.QtCore import QTimer
-from Image_Manipulation.randomArt import randomArt
-#from randomArt import randomArt
 from PIL.ImageQt import ImageQt
 import sys
-import faulthandler
+import numpy as np
 import pdb
+from circleArt import circleArt
 
 class artScreen(QDialog):
 
@@ -15,10 +14,19 @@ class artScreen(QDialog):
     """ App is the PyQt5.QtCore.QApplication object for the main app """
 
     def artDialog(self, inputSize):
-        # Set timer for a set interval
-        timer = QTimer(self)
-        timer.timeout.connect(self.updateScreen)
-        timer.start(300)  # in milliseconds e.g. 1000 = 1 sec
+
+        # initialize an array for the image -- x by y arrays of 3-item arrays for the HSV values of each pixel in the image
+        self.imageArray = np.zeros((inputSize[0],inputSize[1],3),dtype=np.uint8)
+        
+        # set timer for updating the whole image
+        updateTimer = QTimer(self)
+        updateTimer.timeout.connect(lambda: self.updateScreen())
+        updateTimer.start(1000)  # in milliseconds e.g. 1000 = 1 sec
+
+        # set timer for creating a pulsating illusion on the image
+        pulseTimer = QTimer(self)
+        pulseTimer.timeout.connect(lambda: self.updateScreen(pulse=True))
+        pulseTimer.start(100)
 
         self.size = inputSize
         self.initUI()
@@ -39,11 +47,16 @@ class artScreen(QDialog):
         self.raise_()
         self.show()
    
-    def updateScreen(self):
-        """ Update the art screen"""
-        """ newImage is a PIL Image object of the new image to be displayed """
+    def updateScreen(self,pulse=False):
+
+        ''' Update the art screen
+
+        funcName is the art function to be implemented. hsvArt produces a new image, and pulseArt creates a pulsing effect
+        '''
+
         # pdb.set_trace()
-        newImage = randomArt(self.size)
+        newImage = circleArt(self.imageArray,pulse=pulse)
+        # newImage = randomArt(self.size)
         self.qim = ImageQt(newImage)
         pix = QPixmap.fromImage(self.qim)
         self.imageLabel.setPixmap(pix)
