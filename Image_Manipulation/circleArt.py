@@ -6,7 +6,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 
-def circleArt(imageArray,freqNoise=[],freqState=[],artFeatures=[],pulse=False):
+def circleArt(imageArray,freqNoise=[],freqState=[],artFeatures=[0,1,2,3],pulse=False):
 
     ''' make an image in the HSV system based on the given data
     

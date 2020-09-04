@@ -9,7 +9,7 @@ from PIL.ImageQt import ImageQt
 import sys
 import numpy as np
 import pdb
-from circleArt import circleArt
+from Image_Manipulation.circleArt import circleArt
 
 class artScreen(QDialog):
 
@@ -27,7 +27,7 @@ class artScreen(QDialog):
         self.initUI()
         # Set timer for a set interval
         timer = QTimer(self)
-        timer.timeout.connect(lambda: self.updateScreen(q))
+        timer.timeout.connect(lambda: self.updateScreen(artFeatures=artFeatures,queue=q))
         timer.start(1000)  # in milliseconds e.g. 1000 = 1 sec
 
             # set timer for creating a pulsating illusion on the image
@@ -48,7 +48,7 @@ class artScreen(QDialog):
         self.raise_()
         self.show()
 
-    def updateScreen(self,q,pulse=True):
+    def updateScreen(self,artFeatures=[0,1,2,3],queue=None,pulse=False):
 
         ''' Update the art screen
 
@@ -57,9 +57,7 @@ class artScreen(QDialog):
         if not q.empty():
             state_dict,noise_dict = q.get()
             print(state_dict)
-            newImage = hsvArt(self.size, noise_dict, state_dict, self.artFeatures) #create newImage from hsvArt fun
-        else:
-            newImage = circleArt(self.imageArray,pulse=pulse)
+            newImage = circleArt(self.imageArray,freqNoise=noise_dict,freqState = state_dict,pulse=pulse) #create newImage from hsvArt fun
 
         self.qim = ImageQt(newImage)
         pix = QPixmap.fromImage(self.qim)
