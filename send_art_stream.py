@@ -53,7 +53,7 @@ def sendingData():
     real_fake_data = np.sum(np.array([real_fake_alpha, real_fake_beta, real_fake_delta, real_fake_theta]).T, axis=1)
 
 
-# Psuedo-randomized frequency
+    # Psuedo-randomized frequency
     # alpha_random = random.random() * 7
     # beta_random = random.random() * 10
     # delta_random = random.random() * 4

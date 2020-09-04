@@ -76,6 +76,7 @@ class bin_image(Warps):
                 plane.save(name.replace("final_image","8"))
             if self.warp[0] == 't':
                 image = Image.fromarray(self.trig(self.image,self.warp[1]))
+        print(name)
         image.save(name)
         return image
 

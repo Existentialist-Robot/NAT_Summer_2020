@@ -7,7 +7,7 @@ theta = [7.332827665540709, 7.693271996617378, 6.409582916757133, 6.925888943127
 delta = [1.6747542908272948, 0.792628712689756, 0.9962083257186725, 1.1048836673314748, 1.23381736706717, 1.025315344646628, 1.2172809260762698, 1.542627872299756, 1.2572786093425488, 1.1197264326339946]
 
 f = util.frequency()
-im = binary.bin_image((600,600),f,'0123',3,warp = [None,None])
+im = binary.bin_image((50,50),f,'0123',3,warp = [None,None])
 for i,j,k,r in zip(alpha,beta,theta,delta): # for each time point in the data
     f.store_signal(i,j,k,r)
     # x = f.store_signal(i,j,k,r)

@@ -7,106 +7,126 @@ import pdb
 
 random.seed = 1
 
-def safeDivide(a, b):
-    return np.divide(a, np.maximum(b, 0.001))
 
-def noFunc():
-    return
-
-# def applyFunctions(inputArray,bias):
-
-#     ''' appy different functions to a given array, with the consideration of the bias
-
-#     the possible functions that can be applied are: addition, subtraction, multiplication, division, sin, cos, tan, and modulo
-#     '''
-
-#     funcs = [(1, noFunc),
-#             (1, np.sin),
-#             (1, np.cos),
-#             (1, np.tan),
-#             (2, np.add),
-#             (2, np.subtract),
-#             (2, np.multiply),
-#             (2, np.mod),
-#             (2, safeDivide)]
-
-
-def changeHue(inputArray,freqState,artFeature):
+def changeHue(inputArray,freqState,pulse=False,inc=True):
 
     ''' manipulate the hue levels of the image
 
     inputArray is a numpy array storing the hue value of the imate
     freqState is a dict, storing the amplitude level (low or high) of each bandwidth of brain wave for the last second of data
-    artFeatures is a dict, storing the art features (hue, saturation, value, line quality) assigned to each bandwidth of brain wave
+
+    if pulse is True, only increment (default) or decrement (if inc == False) by a small amount
     '''
 
-    bias = 0
+    outputArray = np.zeros(inputArray.shape)
+
+    if pulse:
+        if inc:
+            inputArray += 10
+        else:
+            inputArray -= 10
+        return
+
     if freqState == 'high': # if the frequency band has a high amplitude, push the colours toward red
-        bias = -50
+        hue = random.choice((0,50),(300,360))
+        hue = random.randint(hue)
+    elif freqState == 'low':    # if the frequency band has a low amplitude, push the colours toward blue
+        hue = random.randint(70,300)
+    else:   # if default, pick from the yellow range
+        hue = random.randint(50,70)
 
-    # draw values for hue by randomly sampling from a normal distribution with mean and standard deviation that are randomly generated but biased depending on the amplitude level
-    outputArray = np.random.normal(loc=random.randint(0,360)+bias,scale=360*0.05+bias*0.05,size=inputArray.shape)
-
-    # reset values that are beyond boundaries
-    outputArray[np.where(outputArray > 360)] = 360
-    outputArray[np.where(outputArray < 0)] = 0
+    # assign hue value to the input array
+    outputArray.fill(hue)
 
     return outputArray
 
 
-def changeSaturation(inputArray,freqState,artFeature):
+def changeSaturation(inputArray,freqState,pulse=False,inc=True):
 
     ''' manipulate the saturation levels of the image
 
     inputArray is a numpy array storing the hue value of the imate
     freqState is a dict, storing the amplitude level (low or high) of each bandwidth of brain wave for the last second of data
-    artFeatures is a dict, storing the art features (hue, saturation, value, line quality) assigned to each bandwidth of brain wave
+
+    if pulse is True, only increment (default) or decrement (if inc == False) by a small amount
     '''
 
-    bias = 0
-    if freqState == 'high': # if the frequency band has a high amplitude, output higher saturation
-        bias = 20
+    outputArray = np.zeros(inputArray.shape)
 
-    # draw values for hue by randomly sampling from a normal distribution with mean and standard deviation that are randomly generated but biased depending on the amplitude level
-    outputArray = np.random.normal(loc=random.randint(0,100)+bias,scale=100*0.05-bias*0.05,size=inputArray.shape)
-    
-    # reset values that are beyond boundaries
-    outputArray[np.where(outputArray > 100)] = 100
-    outputArray[np.where(outputArray < 0)] = 0
+    if pulse:
+        if inc:
+            inputArray += 10
+        else:
+            inputArray -= 10
+        return
+
+    if freqState == 'high': # if the frequency band has a high amplitude, bias toward higher saturation
+        bias = 50
+    else:   # if the frequency band has a low amplitude or is set to default, bias toward lower saturation
+        bias = -50
+
+    # draw a random value for saturation then add the bias
+    sat = random.randint(0,100) + bias
+
+    # cap the saturation to 0 for the lower bound and 100 for the upper bound
+    if sat > 100:
+        sat = 100
+    elif sat < 0:
+        sat = 0
+
+    # assign the saturation value to the input array
+    outputArray.fill(sat)
 
     return outputArray
 
-def changeValue(inputArray,freqState,artFeature):
+
+def changeValue(inputArray,freqState,pulse=False,inc=True):
 
     ''' manipulate the value levels of the image
 
     inputArray is a numpy array storing the hue value of the imate
     freqState is a dict, storing the amplitude level (low or high) of each bandwidth of brain wave for the last second of data
-    artFeatures is a dict, storing the art features (hue, saturation, value, line quality) assigned to each bandwidth of brain wave
+
+    if pulse is True, only increment (default) or decrement (if inc == False) by a small amount
     '''
 
-    bias = 0
-    if freqState == 'high': # if the frequency band has a high amplitude, output higher value (0% = black)
-        bias = 20
+    outputArray = np.zeros(inputArray.shape)
 
-    # draw values for hue by randomly sampling from a normal distribution with mean and standard deviation that are randomly generated but biased depending on the amplitude level
-    outputArray = np.random.normal(loc=random.randint(0,100)+bias,scale=100*0.05-bias*0.05,size=inputArray.shape)
-    
-    # reset values that are beyond boundaries
-    outputArray[np.where(outputArray > 100)] = 100
-    outputArray[np.where(outputArray < 0)] = 0
+    if pulse:
+        if inc:
+            inputArray += 10
+        else:
+            inputArray -= 10
+        return
+
+    if freqState == 'high': # if the frequency band has a high amplitude, output higher value (0% = black)
+        bias = 50
+    else:   # if the frequency band has a high amplitude, output lower value
+        bias = -50
+
+    # draw a random value for the value then add the bias
+    value = random.randint(0, 100) + bias
+
+    # cap the saturation to 0 for the lower bound and 100 for the upper bound
+    if value > 100:
+        value = 100
+    elif value < 0:
+        value = 0
+
+    # assign the saturation value to the input array
+    outputArray.fill(value)
 
     return outputArray
 
-
-def changeLineQual(inputArray,freqState,artFeature):
+def changeLineQual(inputArray, freqState):
 
     ''' manipulate the saturation levels of the image
 
     inputArray is a numpy array storing the hue value of the imate
-    freqState is a dict, storing the amplitude level (low or high) of each bandwidth of brain wave for the last second of data
-    artFeatures is a dict, storing the art features (hue, saturation, value, line quality) assigned to each bandwidth of brain wave
+    freqState is a string, storing the amplitude level (low or high) of each bandwidth of brain wave for the last second of data
     '''
+
+    outputArray = np.zeros(inputArray.shape)
 
     # set the bias to the generated numbers depending on the state of the given frequency
     bias = 0
@@ -122,9 +142,20 @@ def changeLineQual(inputArray,freqState,artFeature):
     for i in range(n_sections):
         linewidth = random.randint(1,section_size)
         linestart = i*section_size+(section_size//2-linewidth//2)
-        inputArray[linestart:linestart+linewidth,:]=1
+        outputArray[linestart:linestart+linewidth,:]=1
 
-    return inputArray
+    return outputArray
+
+
+def changeBlendLayer(inputArray,freqState):
+
+    ''' manipulate the blend layer of the image
+    
+    inputArray is a numpy array storing the hue value of the imate
+    freqState is a string, storing the amplitude level (low or high) of each bandwidth of brain wave for the last second of data
+    '''
+
+    pass
 
 
 def getArtFunc(artFeature):
@@ -142,7 +173,8 @@ def getArtFunc(artFeature):
     else:
         return 'changeLineQual',artFeature
 
-def hsvArt(size,freqNoise,freqState,artFeatures):
+
+def hsvArt(imageArray,blendArray,freqNoise,freqState,artFeatures):
 
     ''' make an image in the HSV system based on the given data
     
@@ -157,34 +189,52 @@ def hsvArt(size,freqNoise,freqState,artFeatures):
     freqOrder = ['Beta','Alpha','Theta','Delta']
     
     # unpack size into x and y dimensions
-    xdim,ydim = size
-
-    # initialize three x by y arrays, for the HSV values of each pixel in the image
-    imageArray = np.zeros((xdim,ydim,1,4),dtype=np.uint8)
+    xdim,ydim = imageArray.shape[:2]
 
     # make the art
     for freq in freqNoise.keys():   # iterate through the bandwidths
-        if not freqNoise[freq]: # if there is no noise in the wave signal
 
-            # TODO: Decide on some sort of a default when there is noise in the signal -- e.g. if delta is noisy, then everything else is ignored but we don't wanna do that
+        func,arrayIdx = getArtFunc(artFeatures[freqOrder.index(freq)])    # get appropriate function for the art feature to be manipulated
 
-            func,arrayIdx = getArtFunc(artFeatures[freqOrder.index(freq)])    # get appropriate function for the art feature to be manipulated
+        # if there is noise in the bandwidth, set the bandwidth state to 'default'. if not, just set it to what it is (high or low)
+        if freqNoise[freq]:
+            state = 'default'
+        else:
+            state = freqState[freq]
+
+        if arrayIdx == 3:   # if changing line quality
+            inputArray = 'blendArray'
+
+            evalExpression = '%s(%s,\'%s\')' % (func,inputArray,state) # create expression to be evaluated
+            blendArray = eval(evalExpression)   # apply the function to the blend array
+
+        else:
             inputArray = 'imageArray[:,:,:,%d]' % arrayIdx
-            evalExpression = '%s(%s,\'%s\',%d)' % (func,inputArray,freqState[freq],artFeatures[freqOrder.index(freq)]) # create expression to be evaluated
+
+            evalExpression = '%s(%s,\'%s\')' % (func,inputArray,state) # create expression to be evaluated
             imageArray[:,:,:,arrayIdx] = eval(evalExpression)   # apply the function to the image array
 
     # based on the line quality layer, make the final array
     for i in range(3):
-        imageArray[:,:,:,i][np.where(imageArray[:,:,:,3]==0)] = 0
+        imageArray[:,:,:,i][np.where(blendArray==0)] = 0
     # generate image as PIL Image with the HSV mode, but return image in the RGB mode (ImageQt only accepts PIL Image in the RGB mode)
     im = Image.fromarray(imageArray[:,:,:,0:3], mode='HSV')
+<<<<<<< HEAD
     
+=======
+    #return im
+>>>>>>> upstream/master
     return im.convert(mode='RGB')
     
 
 def hsv_main():
 
     size=[400,400]
+
+    # initialize an array for the image -- x by y arrays of 3-item arrays for the HSV values of each pixel in the image
+    imageArray = np.zeros((size[0],size[1],1,3),dtype=np.uint8)
+    # initialize an x by y array for making patterns on the image by using blend modes
+    imageBlend = np.zeros((size[0], size[1]), dtype=np.uint8)
 
     freqNoise = {
         'Delta': False,
@@ -204,7 +254,7 @@ def hsv_main():
     
     while True:
 
-        image = hsvArt(size,freqNoise,freqState,artFeatures)
+        image = hsvArt(imageArray,imageBlend,freqNoise,freqState,artFeatures)
         image.show()
         print('freqNoise:\n',freqNoise)
         print('freqState:\n',freqState)

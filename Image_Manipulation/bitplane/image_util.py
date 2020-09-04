@@ -46,7 +46,7 @@ class Admin:
         return (name + self.system + im_bits + ".png")
 
     def make_folders(self,num_bits):
-        length = en(self.signals['a'])
+        length = len(self.freq.signals['a'])
         length //= 8
         new_folder = 'bin_images' + self.system + self.set_prefix() + str(length)
         if not os.path.exists(new_folder):
