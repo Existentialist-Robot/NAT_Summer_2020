@@ -616,10 +616,10 @@ def CreateModel(feats,units=[16,8,4,8,16], dropout=.25,
       (feats.model_type == 'NN')):
 
     # initiate adam optimizer
-    opt = tf.keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999,
+    opt = tf.keras.optimizers.Adam(lr=0.01, beta_1=0.9, beta_2=0.999,
                                 epsilon=None, decay=0.0, amsgrad=False)
     # Let's train the model using RMSprop
-    model.compile(loss='binary_crossentropy',
+    model.compile(loss='categorical_crossentropy',
                   optimizer=opt,
                   metrics=['acc'])
     encoder = []
