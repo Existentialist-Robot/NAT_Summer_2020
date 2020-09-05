@@ -3,7 +3,7 @@ import time
 from multiprocessing import Process
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout
-from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox
+from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox, QRadioButton, QDialogButtonBox
 from PyQt5.QtWidgets import QInputDialog, QDialog, QDesktopWidget
 from PyQt5.QtGui import QFont, QPixmap, QIcon, QImage, QPalette, QBrush, QPainter
 from PyQt5.QtCore import Qt, QSize
@@ -202,26 +202,26 @@ class MainWindow(QMainWindow):
         btn3.clicked.connect(lambda: toggle(btn3))
 
 
+
+
     def open_artScreen(self):
         global currentFeatures
-        #screenSize = QMessageBox()
-        #options = [()]
-        #screenSize = QInputDialog()
-        #screenSize.setText("Choose art screen size.")
-        #screenSize.setWindowTitle("Screen Size")
-        #screenSize.setStandardButtons(QMessageBox.OK | QMessageBox.Cancel)
+        #screenSize = RadioDialog(self)
+        #screenSize.exec_()
         #art_screen_size = [1080, 1080] #1.0
         #art_screen_size = [1728, 972] #0.9
         #art_screen_size = [1440, 729] #0.75
         #art_screen_size = [540, 960] #0.5
         #art_screen_size = [1080, 1080] #1.0
-        #art_screen_size = [972, 972] #0.9
-        #art_screen_size = [729, 729] #0.75
-        art_screen_size = [540, 540] #0.5
+        large = [972, 972] #0.9
+        med = [729, 729] #0.75
+        small = [540, 540] #0.5
+        options = ['large', 'med', 'small']
+        #screenSize = QInputDialog.getItem(self.widget, "Choose size", "Size", options, 0, True)
         #art_screen_size = [self.width, self.height]
-        print(art_screen_size)
+        #print(art_screen_size)
+        art_screen_size = small
         launchArtScreen(art_screen_size, currentFeatures)
-        
 
     def RecordBaseline(self):
         global stimulus
@@ -256,12 +256,33 @@ class MainWindow(QMainWindow):
                 print("baseline task complete")
 
   
-features = ["Hue",
-            "Saturation",
-            "Value",
-            "Line Quality",
+features = ["Red",
+            "Green",
+            "Blue",
+            "Shape",
             ]
-currentFeatures = [0, 1, 2, 3]   # 0 = Hue, 1 = Saturation, 2 = Value, 3 = Line Quality
+
+class RadioDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super(RadioDialog, self).__init__(*args, **kwargs)
+    
+        self.setWindowTitle("Screen Size")
+
+        self.choice1 = QRadioButton("Small")
+        self.choice1.setChecked(True)
+        self.choice2 = QRadioButton("Medium")
+        self.choice3 = QRadioButton("Large")
+        self.choice4 = QRadioButton("Custom")
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.choice1)
+        self.layout.addWidget(self.choice2)
+        self.layout.addWidget(self.choice3)
+        self.layout.addWidget(self.choice4)
+        self.setLayout(self.layout)
+
+
+currentFeatures = [0, 1, 2, 3]   # 0 = Red, 1 = Green, 2 = Blue, 3 = Shape
 
 sending = 0
 stimulus = 0

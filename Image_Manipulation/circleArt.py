@@ -6,7 +6,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 
-def circleArt(imageArray,freqNoise=[],freqState=[],artFeatures=[0,1,2,3],pulse=False):
+def circleArt(imageArray,freqNoise,freqState,artFeatures):
 
     ''' make an image in the HSV system based on the given data
     
@@ -23,73 +23,61 @@ def circleArt(imageArray,freqNoise=[],freqState=[],artFeatures=[0,1,2,3],pulse=F
     # unpack size into x and y dimensions
     xdim,ydim = imageArray.shape[:2]
 
-    if pulse:
-        imageArray = imageArray[0]+5
+    lineQualBandwidth = freqOrder[artFeatures.index(3)]
 
+    # pdb.set_trace()
+    if not freqNoise[lineQualBandwidth]:
+        if freqState[lineQualBandwidth] == 'High':
+            thicknessRange = (xdim*0.3,xdim*0.4)
+            nCircles = random.randint(20,30)
+            alpha = random.uniform(0.6,1)
+            
+        else:
+            thicknessRange = (xdim*0.1,xdim*0.2)
+            nCircles = random.randint(5,10)
+            alpha = random.uniform(0.2, 0.4)
     else:
-        lineQualBandwidth = freqOrder[artFeatures.index(3)]
+        thicknessRange = (5,xdim*0.05)
+        nCircles = random.randint(0,3)
+        alpha = random.uniform(0,0.1)
 
-        # pdb.set_trace()
-        if not freqNoise[lineQualBandwidth]:
-            if freqState[lineQualBandwidth] == 'High':
-                thicknessRange = (xdim*0.3,xdim*0.4)
-                nCircles = random.randint(20,30)
-                alpha = random.uniform(0.6,1)
-                
-            else:
-                thicknessRange = (xdim*0.1,xdim*0.2)
-                nCircles = random.randint(5,10)
-                alpha = random.uniform(0.2, 0.4)
+    rBandwidth = freqOrder[artFeatures.index(0)]
+    if not freqNoise[rBandwidth]:
+        if freqState[rBandwidth] == 'High':
+            rRange = (200,255)
         else:
-            thicknessRange = (5,xdim*0.05)
-            nCircles = random.randint(0,3)
-            alpha = random.uniform(0,0.1)
+            rRange = (100, 180)
+    else:
+        rRange = (30,60)
 
-        rBandwidth = freqOrder[artFeatures.index(0)]
-        if not freqNoise[rBandwidth]:
-            if freqState[rBandwidth] == 'High':
-                rRange = (200,255)
-            else:
-                rRange = (100, 180)
+    gBandwidth = freqOrder[artFeatures.index(1)]
+    if not freqNoise[gBandwidth]:
+        if freqState[gBandwidth] == 'High':
+            gRange = (200,255)
         else:
-            rRange = (30,60)
+            gRange = (100, 180)
+    else:
+        gRange = (30,60)
 
-        gBandwidth = freqOrder[artFeatures.index(1)]
-        if not freqNoise[gBandwidth]:
-            if freqState[gBandwidth] == 'High':
-                gRange = (200,255)
-            else:
-                gRange = (100, 180)
+    bBandwidth = freqOrder[artFeatures.index(2)]
+    if not freqNoise[bBandwidth]:
+        if freqState[bBandwidth] == 'High':
+            bRange = (200,255)
         else:
-            gRange = (30,60)
+            bRange = (100, 180)
+    else:
+        bRange = (30,60)
 
-        bBandwidth = freqOrder[artFeatures.index(2)]
-        if not freqNoise[bBandwidth]:
-            if freqState[bBandwidth] == 'High':
-                bRange = (200,255)
-            else:
-                bRange = (100, 180)
-        else:
-            bRange = (30,60)
+    for i in range(nCircles):
+        random.choice([
+            cv2.circle(imageArray,(random.randint(xdim*0.2,xdim*0.8),random.randint(ydim*0.2,ydim*0.8)),random.randint(xdim*0.1,xdim*0.5),(random.randint(rRange[0],rRange[1]),random.randint(gRange[0],gRange[1]),random.randint(bRange[0],bRange[1]))),
+            cv2.circle(imageArray,(random.randint(xdim*0.2,xdim*0.8),random.randint(ydim*0.2,ydim*0.8)),random.randint(xdim*0.1,xdim*0.5),(random.randint(rRange[0],rRange[1]),random.randint(gRange[0],gRange[1]),random.randint(bRange[0],bRange[1])),thickness = random.randint(thicknessRange[0],thicknessRange[1]))
+            ])
 
-        print(thicknessRange)
-        print(nCircles)
-        print(rRange)
-        print(gRange)
-        print(bRange)
+        imageArray = cv2.addWeighted(imageArray, alpha, imageArray, 1 - alpha, 0)
 
-        for i in range(nCircles):
-            random.choice([
-                cv2.circle(imageArray,(random.randint(xdim*0.2,xdim*0.8),random.randint(ydim*0.2,ydim*0.8)),random.randint(xdim*0.1,xdim*0.5),(random.randint(rRange[0],rRange[1]),random.randint(gRange[0],gRange[1]),random.randint(bRange[0],bRange[1]))),
-                cv2.circle(imageArray,(random.randint(xdim*0.2,xdim*0.8),random.randint(ydim*0.2,ydim*0.8)),random.randint(xdim*0.1,xdim*0.5),(random.randint(rRange[0],rRange[1]),random.randint(gRange[0],gRange[1]),random.randint(bRange[0],bRange[1])),thickness = random.randint(thicknessRange[0],thicknessRange[1]))
-                ])
-
-            imageArray = cv2.addWeighted(imageArray, alpha, imageArray, 1 - alpha, 0)
-
-        # generate image as PIL Image with the HSV mode, but return image in the RGB mode (ImageQt only accepts PIL Image in the RGB mode)
-        # im = Image.fromarray(imageArray, mode='RGB')
-        return imageArray
-        # return im.convert(mode='RGB')
+    # return image array
+    return imageArray
     
 
 def main():
@@ -117,7 +105,7 @@ def main():
 
     artFeatures = [0,1,2,3]
     
-    image = circleArt(imageArray,freqNoise=freqNoise,freqState=freqState,artFeatures=artFeatures)
+    image = circleArt(imageArray,freqNoise,freqState,artFeatures)
     
     # image.show()
     print('freqNoise:\n',freqNoise)
@@ -126,10 +114,6 @@ def main():
     plt.imshow(image)
     plt.show()
 
-    image = circleArt(imageArray,pulse=True)
-
-    plt.imshow(image)
-    plt.show()
 
 if __name__ == '__main__':
     main()
