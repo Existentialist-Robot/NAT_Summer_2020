@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
-from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog, QDesktopWidget)
+from PyQt5.QtCore import QTimer, Qt, QRect
 from multiprocessing import Process, Queue
 from running_stream import *
 from PIL.ImageQt import ImageQt
@@ -65,6 +65,13 @@ class artScreen(QDialog):
     def initUI(self):
         self.hbox = QHBoxLayout(self)
         self.setWindowTitle('Art Screen')
+        qtRectangle = QRect(0, 0, self.size[1], self.size[0])
+        #qtRectangle = self.frameGeometry()
+        print(qtRectangle)
+        centerPoint = QDesktopWidget().availableGeometry().center()
+        qtRectangle.moveCenter(centerPoint)
+        self.move(qtRectangle.topLeft())
+
         pixmap = QPixmap()
         self.imageLabel = QLabel(self)
         self.imageLabel.setPixmap(pixmap)

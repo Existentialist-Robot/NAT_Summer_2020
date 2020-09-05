@@ -28,16 +28,16 @@ def circleArt(imageArray,freqNoise,freqState,artFeatures):
     # pdb.set_trace()
     if not freqNoise[lineQualBandwidth]:
         if freqState[lineQualBandwidth] == 'High':
-            thicknessRange = (xdim*0.3,xdim*0.4)
+            thicknessRange = (int(xdim*0.3),int(xdim*0.4))
             nCircles = random.randint(20,30)
             alpha = random.uniform(0.6,1)
             
         else:
-            thicknessRange = (xdim*0.1,xdim*0.2)
+            thicknessRange = (int(xdim*0.1),int(xdim*0.2))
             nCircles = random.randint(5,10)
             alpha = random.uniform(0.2, 0.4)
     else:
-        thicknessRange = (5,xdim*0.05)
+        thicknessRange = (5,int(xdim*0.05))
         nCircles = random.randint(0,3)
         alpha = random.uniform(0,0.1)
 
@@ -70,8 +70,8 @@ def circleArt(imageArray,freqNoise,freqState,artFeatures):
 
     for i in range(nCircles):
         random.choice([
-            cv2.circle(imageArray,(random.randint(xdim*0.2,xdim*0.8),random.randint(ydim*0.2,ydim*0.8)),random.randint(xdim*0.1,xdim*0.5),(random.randint(rRange[0],rRange[1]),random.randint(gRange[0],gRange[1]),random.randint(bRange[0],bRange[1]))),
-            cv2.circle(imageArray,(random.randint(xdim*0.2,xdim*0.8),random.randint(ydim*0.2,ydim*0.8)),random.randint(xdim*0.1,xdim*0.5),(random.randint(rRange[0],rRange[1]),random.randint(gRange[0],gRange[1]),random.randint(bRange[0],bRange[1])),thickness = random.randint(thicknessRange[0],thicknessRange[1]))
+            cv2.circle(imageArray,(random.randint(int(xdim*0.2),int(xdim*0.8)),random.randint(int(ydim*0.2),int(ydim*0.8))),random.randint(int(xdim*0.1),int(xdim*0.5)),(random.randint(rRange[0],rRange[1]),random.randint(gRange[0],gRange[1]),random.randint(bRange[0],bRange[1]))),
+            cv2.circle(imageArray,(random.randint(int(xdim*0.2),int(xdim*0.8)),random.randint(int(ydim*0.2),int(ydim*0.8))),random.randint(int(xdim*0.1),int(xdim*0.5)),(random.randint(rRange[0],rRange[1]),random.randint(gRange[0],gRange[1]),random.randint(bRange[0],bRange[1])),thickness = random.randint(thicknessRange[0],thicknessRange[1]))
             ])
 
         imageArray = cv2.addWeighted(imageArray, alpha, imageArray, 1 - alpha, 0)

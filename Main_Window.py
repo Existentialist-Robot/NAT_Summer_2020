@@ -201,32 +201,13 @@ class MainWindow(QMainWindow):
         btn2.clicked.connect(self.open_artScreen)
         btn3.clicked.connect(lambda: toggle(btn3))
 
-
-
-
     def open_artScreen(self):
         global currentFeatures
-        
-        #**SELECT SCREEN SIZE DIALOG UNDER CONSTRUCTION**
-        #art_screen_size = [self.width, self.height]
-        #screenSize = RadioDialog(self)
-        #screenSize.exec_()
-        #H, W = screenSize.acceptSize()
-        #print(H)
-        #print(W)
-        #screenSize.sizeDialog(art_screen_size)
-        #art_screen_size = [1080, 1080] #1.0
-        #art_screen_size = [1728, 972] #0.9
-        #art_screen_size = [1440, 729] #0.75
-        #art_screen_size = [540, 960] #0.5
-        #art_screen_size = [1080, 1080] #1.0
-        large = [972, 972] #0.9
-        med = [729, 729] #0.75
-        small = [540, 540] #0.5
-        #screenSize = QInputDialog.getItem(self.widget, "Choose size", "Size", options, 0, True)
-        
-        #print(art_screen_size)
-        art_screen_size = small
+        screen_resolution = [self.width, self.height]
+        screenSize = RadioDialog(self)
+        screenSize.sizeDialog(screen_resolution)
+        W, H = screenSize.getSize()
+        art_screen_size = [H, W]
         launchArtScreen(art_screen_size, currentFeatures)
 
     def RecordBaseline(self):
@@ -271,22 +252,23 @@ features = ["Red",
 class RadioDialog(QDialog):
     def sizeDialog(self, size):
         self.size = size
-        self.w = size[0]
-        self.h = size[1]
+        self.w, self.h = int(self.size[0]*0.5), int(self.size[1]*0.5) #default small dimensions
         self.custom = False
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle("Screen Size")
-
+        
         self.validatorW = QIntValidator(50, self.size[0])
         self.validatorH = QIntValidator(50, self.size[1])
         self.customW = QLineEdit(self)
         self.customW.setDisabled(True)
         self.customW.setValidator(self.validatorW)
+        self.labelW = QLabel('W:')
         self.customH = QLineEdit(self)
         self.customH.setDisabled(True)
         self.customH.setValidator(self.validatorH)
+        self.labelH = QLabel('H:')
         self.choice1 = QRadioButton("Small")
         self.choice1.setChecked(True)
         self.choice2 = QRadioButton("Medium")
@@ -297,7 +279,9 @@ class RadioDialog(QDialog):
 
         self.layout = QVBoxLayout()
         self.layoutWH = QHBoxLayout()
+        self.layoutWH.addWidget(self.labelW)
         self.layoutWH.addWidget(self.customW)
+        self.layoutWH.addWidget(self.labelH)
         self.layoutWH.addWidget(self.customH)
 
         self.layout.addWidget(self.choice1)
@@ -318,27 +302,30 @@ class RadioDialog(QDialog):
 
         self.exec_()
 
-    def acceptSize(self):
+    def getSize(self):
         if self.custom:
             W = int(self.customW.text())
             H = int(self.customH.text())
 
             if W < 50:
-                self.w = 50
+                W = 50
             elif W > self.size[0]:
-                self.w = self.size[0]
+                W = int(self.size[0])
             else:
-                self.w = self.customH.text()
+                W = int(self.customH.text())
 
             if H < 50:
-                self.h = 50
+                H = 50
             elif H > self.size[1]:
-                self.h = self.size[1]
+                H = int(self.size[1])
             else:
-                self.h = self.customW.text()
+                H = int(self.customW.text())
+            return W, H
+        else:
+            return self.w, self.h
 
-        print(int(self.w))
-        print(int(self.h))
+    def acceptSize(self):
+        self.getSize()
         self.accept()
 
     def btnState(self, b):
@@ -346,15 +333,18 @@ class RadioDialog(QDialog):
         if b.text() == "Small":
             self.customH.setDisabled(True)
             self.customW.setDisabled(True)
-            self.w, self.h = int(self.size[0]*0.9), int(self.size[1]*0.9)
+            self.custom = False
+            self.w, self.h = int(self.size[0]*0.5), int(self.size[1]*0.5)
         if b.text() == "Medium":
             self.customH.setDisabled(True)
             self.customW.setDisabled(True)
+            self.custom = False
             self.w, self.h = int(self.size[0]*0.75), int(self.size[1]*0.75)
         if b.text() == "Large":
             self.customH.setDisabled(True)
             self.customW.setDisabled(True)
-            self.w, self.h = int(self.size[0]*0.5), int(self.size[1]*0.5)
+            self.custom = False
+            self.w, self.h = int(self.size[0]*0.9), int(self.size[1]*0.9)
         if b.text() == "Custom":
             self.customH.setDisabled(False)
             self.customW.setDisabled(False)
