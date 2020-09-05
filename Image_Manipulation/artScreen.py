@@ -85,12 +85,12 @@ class artScreen(QDialog):
         
         if not q.empty():
             state_dict,noise_dict = q.get()
-            if state_dict != self.state_dict | noise_dict != self.noise_dict:
+            if state_dict != self.state_dict or noise_dict != self.noise_dict:
                 self.state_dict = state_dict
                 self.noise_dict = noise_dict
                 self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_dict,artFeatures) #create newImage from hsvArt fun
             else:
-                self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_state,artFeatures)
+                self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_dict,artFeatures)
         else:
             self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_dict,artFeatures)
             # newImage = Image.fromarray(self.imageArray,mode='RGB')

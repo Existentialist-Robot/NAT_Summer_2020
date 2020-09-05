@@ -3,9 +3,9 @@ import time
 from multiprocessing import Process
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout
-from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox, QRadioButton, QDialogButtonBox
+from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox, QRadioButton, QDialogButtonBox, QLineEdit
 from PyQt5.QtWidgets import QInputDialog, QDialog, QDesktopWidget
-from PyQt5.QtGui import QFont, QPixmap, QIcon, QImage, QPalette, QBrush, QPainter
+from PyQt5.QtGui import QFont, QPixmap, QIcon, QImage, QPalette, QBrush, QPainter, QIntValidator
 from PyQt5.QtCore import Qt, QSize
 from Image_Manipulation.artScreen import launchArtScreen
 import stroopy_words
@@ -206,8 +206,15 @@ class MainWindow(QMainWindow):
 
     def open_artScreen(self):
         global currentFeatures
+        
+        #**SELECT SCREEN SIZE DIALOG UNDER CONSTRUCTION**
+        #art_screen_size = [self.width, self.height]
         #screenSize = RadioDialog(self)
         #screenSize.exec_()
+        #H, W = screenSize.acceptSize()
+        #print(H)
+        #print(W)
+        #screenSize.sizeDialog(art_screen_size)
         #art_screen_size = [1080, 1080] #1.0
         #art_screen_size = [1728, 972] #0.9
         #art_screen_size = [1440, 729] #0.75
@@ -216,9 +223,8 @@ class MainWindow(QMainWindow):
         large = [972, 972] #0.9
         med = [729, 729] #0.75
         small = [540, 540] #0.5
-        options = ['large', 'med', 'small']
         #screenSize = QInputDialog.getItem(self.widget, "Choose size", "Size", options, 0, True)
-        #art_screen_size = [self.width, self.height]
+        
         #print(art_screen_size)
         art_screen_size = small
         launchArtScreen(art_screen_size, currentFeatures)
@@ -263,23 +269,98 @@ features = ["Red",
             ]
 
 class RadioDialog(QDialog):
-    def __init__(self, *args, **kwargs):
-        super(RadioDialog, self).__init__(*args, **kwargs)
-    
+    def sizeDialog(self, size):
+        self.size = size
+        self.w = size[0]
+        self.h = size[1]
+        self.custom = False
+        self.initUI()
+
+    def initUI(self):
         self.setWindowTitle("Screen Size")
 
+        self.validatorW = QIntValidator(50, self.size[0])
+        self.validatorH = QIntValidator(50, self.size[1])
+        self.customW = QLineEdit(self)
+        self.customW.setDisabled(True)
+        self.customW.setValidator(self.validatorW)
+        self.customH = QLineEdit(self)
+        self.customH.setDisabled(True)
+        self.customH.setValidator(self.validatorH)
         self.choice1 = QRadioButton("Small")
         self.choice1.setChecked(True)
         self.choice2 = QRadioButton("Medium")
         self.choice3 = QRadioButton("Large")
         self.choice4 = QRadioButton("Custom")
 
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+
         self.layout = QVBoxLayout()
+        self.layoutWH = QHBoxLayout()
+        self.layoutWH.addWidget(self.customW)
+        self.layoutWH.addWidget(self.customH)
+
         self.layout.addWidget(self.choice1)
         self.layout.addWidget(self.choice2)
         self.layout.addWidget(self.choice3)
         self.layout.addWidget(self.choice4)
+        self.layout.addLayout(self.layoutWH)
+        self.layout.addWidget(self.buttons)
         self.setLayout(self.layout)
+
+        self.choice1.toggled.connect(lambda: self.btnState(self.choice1))
+        self.choice2.toggled.connect(lambda: self.btnState(self.choice2))
+        self.choice3.toggled.connect(lambda: self.btnState(self.choice3))
+        self.choice4.toggled.connect(lambda: self.btnState(self.choice4))
+
+        self.buttons.accepted.connect(self.acceptSize)
+        self.buttons.rejected.connect(self.reject)
+
+        self.exec_()
+
+    def acceptSize(self):
+        if self.custom:
+            W = int(self.customW.text())
+            H = int(self.customH.text())
+
+            if W < 50:
+                self.w = 50
+            elif W > self.size[0]:
+                self.w = self.size[0]
+            else:
+                self.w = self.customH.text()
+
+            if H < 50:
+                self.h = 50
+            elif H > self.size[1]:
+                self.h = self.size[1]
+            else:
+                self.h = self.customW.text()
+
+        print(int(self.w))
+        print(int(self.h))
+        self.accept()
+
+    def btnState(self, b):
+        print(b.text())
+        if b.text() == "Small":
+            self.customH.setDisabled(True)
+            self.customW.setDisabled(True)
+            self.w, self.h = int(self.size[0]*0.9), int(self.size[1]*0.9)
+        if b.text() == "Medium":
+            self.customH.setDisabled(True)
+            self.customW.setDisabled(True)
+            self.w, self.h = int(self.size[0]*0.75), int(self.size[1]*0.75)
+        if b.text() == "Large":
+            self.customH.setDisabled(True)
+            self.customW.setDisabled(True)
+            self.w, self.h = int(self.size[0]*0.5), int(self.size[1]*0.5)
+        if b.text() == "Custom":
+            self.customH.setDisabled(False)
+            self.customW.setDisabled(False)
+            self.custom = True
+            #return self.custom
+
 
 
 currentFeatures = [0, 1, 2, 3]   # 0 = Red, 1 = Green, 2 = Blue, 3 = Shape
