@@ -205,10 +205,7 @@ class MainWindow(QMainWindow):
         global currentFeatures
         screen_resolution = [self.width, self.height]
         screenSize = RadioDialog(self)
-        screenSize.sizeDialog(screen_resolution)
-        W, H = screenSize.getSize()
-        art_screen_size = [H, W]
-        launchArtScreen(art_screen_size, currentFeatures)
+        screenSize.sizeDialog(screen_resolution, currentFeatures)
 
     def RecordBaseline(self):
         global stimulus
@@ -216,6 +213,7 @@ class MainWindow(QMainWindow):
         global ready_baseline
         if ready_baseline == 0:
             error = QMessageBox.warning(self.widget, "No datastream!", "Please start the datastream first.")
+
         else:
             default = 120
             minTime = 5
@@ -250,30 +248,39 @@ features = ["Red",
             ]
 
 class RadioDialog(QDialog):
-    def sizeDialog(self, size):
+    def sizeDialog(self, size, features):
         self.size = size
+        print(self.size)
+        self.currentFeatures = features
         self.w, self.h = int(self.size[0]*0.5), int(self.size[1]*0.5) #default small dimensions
         self.custom = False
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle("Screen Size")
-        
+        self.setStyleSheet("QDialog { border-image: url(Images/Background.jpg) center center cover no-repeat; color: white }")
+
         self.validatorW = QIntValidator(50, self.size[0])
         self.validatorH = QIntValidator(50, self.size[1])
         self.customW = QLineEdit(self)
         self.customW.setDisabled(True)
         self.customW.setValidator(self.validatorW)
         self.labelW = QLabel('W:')
+        self.labelW.setStyleSheet("QLabel { color: white}")
         self.customH = QLineEdit(self)
         self.customH.setDisabled(True)
         self.customH.setValidator(self.validatorH)
         self.labelH = QLabel('H:')
+        self.labelH.setStyleSheet("QLabel { color: white}")
         self.choice1 = QRadioButton("Small")
+        self.choice1.setStyleSheet("QRadioButton { color: white}")
         self.choice1.setChecked(True)
         self.choice2 = QRadioButton("Medium")
+        self.choice2.setStyleSheet("QRadioButton { color: white}")
         self.choice3 = QRadioButton("Large")
+        self.choice3.setStyleSheet("QRadioButton { color: white}")
         self.choice4 = QRadioButton("Custom")
+        self.choice4.setStyleSheet("QRadioButton { color: white}")
 
         self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
@@ -312,17 +319,20 @@ class RadioDialog(QDialog):
             elif W > self.size[0]:
                 W = int(self.size[0])
             else:
-                W = int(self.customH.text())
+                W = int(self.customW.text())
 
             if H < 50:
                 H = 50
             elif H > self.size[1]:
                 H = int(self.size[1])
             else:
-                H = int(self.customW.text())
-            return W, H
+                H = int(self.customH.text())
         else:
-            return self.w, self.h
+            W = self.w
+            H = self.h
+        self.art_screen_size = [H, W]
+        print(self.art_screen_size)
+        launchArtScreen(self.art_screen_size, self.currentFeatures)
 
     def acceptSize(self):
         self.getSize()

@@ -97,13 +97,19 @@ class Stream:
             # Check that the buffer is filled before creating baseline
             if self.count >= self.chunks:
                 current_data = self.buf.window
+                print("current_data.shape" + str(current_data.shape))
                 # converts data from time domain to frequency domain
                 fft_data = np.absolute(np.fft.rfft(current_data))
+                print("fft_data.shape" + str(fft_data.shape))
+                print("len(current_data.T = )" + str(len(current_data.T)))
+                print("(1.0/buffer = " + str(1.0/buffer))
                 fft_freqs = np.fft.rfftfreq(len(current_data.T), 1.0/buffer)
+                print("fft_freqs.shape" + str(fft_freqs.shape))
                 bias_correction = 1 - (avg_param**(self.count-self.chunks+1)) # prevents skew in avg during early iterations
                 # for each band, identify measurements corresponding to appropriate frequency, average across channels
                 for band in eeg_bands:
                     band_idx = np.where((fft_freqs >= eeg_bands[band][0]) & (fft_freqs <= eeg_bands[band][1]))[0]
+                    print("band_idx.shape" + str(band_idx.shape))
                     freq_val = np.mean(fft_data[band_idx])
                     if (freq_val > self.avg[band] * self.low_bound[band]) & (freq_val < self.avg[band] * self.high_bound[band]):
                         self.noise[band] = False
