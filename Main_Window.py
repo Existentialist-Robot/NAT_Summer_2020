@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout
 from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox, QRadioButton, QDialogButtonBox, QLineEdit
 from PyQt5.QtWidgets import QInputDialog, QDialog, QDesktopWidget
-from PyQt5.QtGui import QFont, QPixmap, QIcon, QImage, QPalette, QBrush, QPainter, QIntValidator
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont, QPixmap, QIcon, QIntValidator
+from PyQt5.QtCore import Qt
 from Image_Manipulation.artScreen import launchArtScreen
 import stroopy_words
 import record
@@ -247,6 +247,7 @@ features = ["Red",
             "Shape",
             ]
 
+
 class RadioDialog(QDialog):
     def sizeDialog(self, size, features):
         self.size = size
@@ -359,9 +360,6 @@ class RadioDialog(QDialog):
             self.customH.setDisabled(False)
             self.customW.setDisabled(False)
             self.custom = True
-            #return self.custom
-
-
 
 currentFeatures = [0, 1, 2, 3]   # 0 = Red, 1 = Green, 2 = Blue, 3 = Shape
 
