@@ -52,7 +52,7 @@ class artScreen(QDialog):
         self.show()
 
     
-    def updateScreen(self,artFeatures=[0,1,2,3],band_q,art_q,pulse=False):
+    def updateScreen(self,band_q,art_q,artFeatures=[0,1,2,3],pulse=False):
 
         ''' Update the art screen
 
