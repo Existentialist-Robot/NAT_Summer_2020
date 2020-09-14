@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 from numpy.random import seed
 seed(1017)
-from tensorflow import set_random_seed
-set_random_seed(1017)
+import tensorflow as tf
+tf.random.set_seed(1017)
 
 
 from glob import glob
@@ -18,7 +17,7 @@ from mne import pick_types, viz, io, Epochs, create_info
 from mne import pick_channels, concatenate_epochs
 from mne.datasets import sample
 from mne.simulation import simulate_sparse_stc, simulate_raw
-from mne.channels import read_montage, make_standard_montage, read_custom_montage
+from mne.channels import make_standard_montage, read_custom_montage
 from mne.time_frequency import tfr_morlet
 
 import pandas as pd
@@ -33,13 +32,13 @@ import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt
 plt.rcParams["figure.figsize"] = (12,12)
 
-import keras
-from keras import regularizers
-from keras.callbacks import TensorBoard
-from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Activation, Input
-from keras.layers import Flatten, Conv2D, MaxPooling2D, LSTM
-from keras.layers import BatchNormalization, Conv3D, MaxPooling3D
+
+from tensorflow.keras import regularizers
+from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense, Dropout, Activation, Input
+from tensorflow.keras.layers import Flatten, Conv2D, MaxPooling2D, LSTM
+from tensorflow.keras.layers import BatchNormalization, Conv3D, MaxPooling3D
 
 from sklearn.utils import class_weight
 from sklearn.model_selection import train_test_split
@@ -48,7 +47,7 @@ sns.set_context('talk')
 sns.set_style('white')
 
 
-def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],                         stim_ind=16, replace_ch_names=None, verbose=1):
+def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], stim_ind=16, replace_ch_names=None, verbose=1):
     """Load CSV files into a Raw object.
 
     Args:
@@ -72,6 +71,7 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
     raw = []
     
     for fname in filename:
+
         # read the file
         data = pd.read_csv(fname, index_col=0)
         # name of each channels
@@ -83,8 +83,8 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         ch_types = ['eeg'] * n_channel + ['stim']
         # get data and exclude Aux channel
         data = data.values[:, ch_ind + [stim_ind]].T
-        # convert in Volts (from uVolts)
-        data[:-1] *= 1e-6
+        # convert in Volts (from nanoVolts?)
+        data[:-1] *= 1e-9
         montage = make_standard_montage('standard_1005')
         info = create_info(ch_names=ch_names, ch_types=ch_types,
                             sfreq=sfreq, verbose=verbose)
@@ -95,8 +95,8 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         raws = concatenate_raws(raw, verbose=verbose)
     return raws
 
-def load_data(subject_nb=1, session_nb=1, sfreq=256.,
-              ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], stim_ind=16, replace_ch_names=None, verbose=1):
+def load_data(sfreq=256.,ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 
+              stim_ind=16, replace_ch_names=None, verbose=1):
     """Load CSV files from the /data directory into a Raw object.
 
     Args:
@@ -117,13 +117,13 @@ def load_data(subject_nb=1, session_nb=1, sfreq=256.,
     Returns:
         (mne.io.array.array.RawArray): loaded EEG
     """
-    if subject_nb == 'all':
+    '''if subject_nb == 'all':
         subject_nb = '*'
     if session_nb == 'all':
         session_nb = '*'
-    
-    recording_path = os.path.join(Path().absolute(), "data", "subject" + "_" + str(subject_nb), "session" + "_" + str(session_nb))
-    filename = '*.csv'
+    '''
+    recording_path = os.path.join(Path().absolute(), "data")
+    filename = '*.txt'
     data_path = os.path.join(recording_path, filename)
     fnames = glob(data_path)
     print(len(fnames))
@@ -355,7 +355,7 @@ def GrattonEmcpEpochs(epochs):
 
 def PreProcess(raw, event_id, plot_psd=False, filter_data=True,
                filter_range=(1,30), plot_events=False, epoch_time=(-.2,1),
-               baseline=(-.2,0), rej_thresh_uV=200, rereference=False, 
+               baseline=(-.2,0), rej_thresh_uV=300, rereference=False, 
                emcp_raw=False, emcp_epochs=False, epoch_decim=1, plot_electrodes=False,
                plot_erp=False):
 
@@ -368,7 +368,7 @@ def PreProcess(raw, event_id, plot_psd=False, filter_data=True,
     filter_range[1] = nsfreq/2.5  #lower than 2 to avoid aliasing from decim??
 
   #pull event names in order of trigger number
-  event_names = ['A_error','B_error']
+  event_names = ['A_error','B_error','C_error']
   i = 0
   for key, value in sorted(event_id.items(), key=lambda x: (x[1], x[0])):
     event_names[i] = key
@@ -418,7 +418,8 @@ def PreProcess(raw, event_id, plot_psd=False, filter_data=True,
 
   ## plot ERP at each electrode
   evoked_dict = {event_names[0]:epochs[event_names[0]].average(),
-                              event_names[1]:epochs[event_names[1]].average()}
+                event_names[1]:epochs[event_names[1]].average(),
+                event_names[2]:epochs[event_names[2]].average()}
 
   # butterfly plot
   if plot_electrodes:
@@ -603,7 +604,7 @@ def CreateModel(feats,units=[16,8,4,8,16], dropout=.25,
 
 
   if feats.model_type == 'AUTO' or feats.model_type == 'AUTODeep':
-    opt = keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999,
+    opt = tf.keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999,
                                 epsilon=None, decay=0.0, amsgrad=False)
     model.compile(optimizer=opt, loss='mean_squared_error')
 
@@ -615,12 +616,12 @@ def CreateModel(feats,units=[16,8,4,8,16], dropout=.25,
       (feats.model_type == 'NN')):
 
     # initiate adam optimizer
-    opt = keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999,
+    opt = tf.keras.optimizers.Adam(lr=0.01, beta_1=0.9, beta_2=0.999,
                                 epsilon=None, decay=0.0, amsgrad=False)
     # Let's train the model using RMSprop
-    model.compile(loss='binary_crossentropy',
+    model.compile(loss='categorical_crossentropy',
                   optimizer=opt,
-                  metrics=['accuracy'])
+                  metrics=['acc'])
     encoder = []
 
 
@@ -704,3 +705,233 @@ def TrainTestVal(model, feats, batch_size=2,
     data['acc'] = acc
 
     return model, data
+
+
+class Feats:
+  def __init__(self, num_classes=2, class_weights=[1,1], input_shape=[16,], 
+               new_times=1, model_type='1', 
+               x_train=1, y_train=1, x_test=1, y_test=1, x_val=1, y_val=1):
+    self.num_classes = num_classes
+    self.class_weights = class_weights
+    self.input_shape = input_shape
+    self.new_times = new_times
+    self.model_type = model_type
+    self.x_train = x_train
+    self.y_train = y_train
+    self.x_test = x_test
+    self.y_test = y_test
+    self.x_val = x_val
+    self.y_val = y_val
+
+def FeatureEngineer(epochs, model_type='NN',
+                frequency_domain=False,
+                normalization=False, electrode_median=False,
+                wavelet_decim=1, flims=(3,30), include_phase=False,
+                f_bins=20, wave_cycles=3, 
+                wavelet_electrodes = [11,12,13,14,15],
+                spect_baseline=[-1,0],
+                test_split = 0.2, val_split = 0.2,
+                random_seed=1017, watermark = False):
+
+  """
+  Takes epochs object as 
+  input and settings, 
+  outputs  feats(training, test and val data option to use frequency or time domain)
+  
+  TODO: take tfr? or autoencoder encoded object?
+  FeatureEngineer(epochs, model_type='NN',
+                    frequency_domain=False,
+                    normalization=False, electrode_median=False,
+                    wavelet_decim=1, flims=(3,30), include_phase=False,
+                    f_bins=20, wave_cycles=3, 
+                    wavelet_electrodes = [11,12,13,14,15],
+                    spect_baseline=[-1,-.5],
+                    test_split = 0.2, val_split = 0.2,
+                    random_seed=1017, watermark = False):
+  """
+  np.random.seed(random_seed)
+
+  #pull event names in order of trigger number
+  epochs.event_id = {'cond0':1, 'cond1':2,'cond3':3}
+  event_names = ['cond0','cond1','cond3']
+  i = 0
+  for key, value in sorted(epochs.event_id.items(),
+                           key=lambda item: (item[1],item[0])):
+    event_names[i] = key
+    i += 1
+
+  #Create feats object for output
+  feats = Feats()
+  feats.num_classes = len(epochs.event_id)
+  feats.model_type = model_type
+
+  if frequency_domain:
+    print('Constructing Frequency Domain Features')
+
+    #list of frequencies to output
+    f_low = flims[0]
+    f_high = flims[1]
+    frequencies =  np.linspace(f_low, f_high, f_bins, endpoint=True)
+
+    #option to select all electrodes for fft
+    if wavelet_electrodes == 'all':
+      wavelet_electrodes = pick_types(epochs.info,eeg=True,eog=False)
+
+    #type of output from wavelet analysis
+    if include_phase:
+      tfr_output_type = 'complex'
+    else:
+      tfr_output_type = 'power'
+
+    tfr_dict = {}
+    for event in event_names:
+      print('Computing Morlet Wavelets on ' + event)
+      tfr_temp = tfr_morlet(epochs[event], freqs=frequencies,
+                            n_cycles=wave_cycles, return_itc=False,
+                            picks=wavelet_electrodes, average=False,
+                            decim=wavelet_decim, output=tfr_output_type)
+
+      # Apply spectral baseline and find stim onset time
+      tfr_temp = tfr_temp.apply_baseline(spect_baseline,mode='mean')
+      stim_onset = np.argmax(tfr_temp.times>0)
+
+      # Reshape power output and save to tfr dict
+      power_out_temp = np.moveaxis(tfr_temp.data[:,:,:,stim_onset:],1,3)
+      power_out_temp = np.moveaxis(power_out_temp,1,2)
+      print(event + ' trials: ' + str(len(power_out_temp)))
+      tfr_dict[event] = power_out_temp
+
+    #reshape times (sloppy but just use the last temp tfr)
+    feats.new_times = tfr_temp.times[stim_onset:]
+
+    for event in event_names:
+      print(event + ' Time Points: ' + str(len(feats.new_times)))
+      print(event + ' Frequencies: ' + str(len(tfr_temp.freqs)))
+
+    #Construct X and Y
+    for ievent,event in enumerate(event_names):
+      if ievent == 0:
+        X = tfr_dict[event]
+        Y_class = np.zeros(len(tfr_dict[event]))
+      else:
+        X = np.append(X,tfr_dict[event],0)
+        Y_class = np.append(Y_class,np.ones(len(tfr_dict[event]))*ievent,0)
+
+    #concatenate real and imaginary data
+    if include_phase:
+      print('Concatenating the real and imaginary components')
+      X = np.append(np.real(X),np.imag(X),2)
+
+    #compute median over electrodes to decrease features
+    if electrode_median:
+      print('Computing Median over electrodes')
+      X = np.expand_dims(np.median(X,axis=len(X.shape)-1),2)
+
+    #reshape for various models
+    if model_type == 'NN' or model_type == 'LSTM':
+      X = np.reshape(X, (X.shape[0], X.shape[1], np.prod(X.shape[2:])))
+
+    if model_type == 'CNN3D':
+      X = np.expand_dims(X,4)
+
+    if model_type == 'AUTO' or model_type == 'AUTODeep':
+      print('Auto model reshape')
+      X = np.reshape(X, (X.shape[0],np.prod(X.shape[1:])))
+
+
+  if not frequency_domain:
+    print('Constructing Time Domain Features')
+
+    #if using muse aux port as eeg must label it as such
+    eeg_chans = pick_types(epochs.info,eeg=True,eog=False)
+
+    #put channels last, remove eye and stim
+    X = np.moveaxis(epochs._data[:,eeg_chans,:],1,2);
+
+    #take post baseline only
+    stim_onset = np.argmax(epochs.times>0)
+    feats.new_times = epochs.times[stim_onset:]
+    X = X[:,stim_onset:,:]
+
+    #convert markers to class
+    #requires markers to be 1 and 2 in data file?
+    #This probably is not robust to other marker numbers
+    Y_class = epochs.events[:,2]-1  #subtract 1 to make 0 and 1
+
+    #median over electrodes to reduce features
+    if electrode_median:
+      print('Computing Median over electrodes')
+      X = np.expand_dims(np.median(X,axis=len(X.shape)-1),2)
+
+    ## Model Reshapes:
+    # reshape for CNN
+    if model_type == 'CNN':
+      print('Size X before reshape for CNN: ' + str(X.shape))
+      X = np.expand_dims(X,3 )
+      print('Size X before reshape for CNN: ' + str(X.shape))
+
+    # reshape for CNN3D
+    if model_type == 'CNN3D':
+      print('Size X before reshape for CNN3D: ' + str(X.shape))
+      X = np.expand_dims(np.expand_dims(X,3),4)
+      print('Size X before reshape for CNN3D: ' + str(X.shape))
+
+    #reshape for autoencoder
+    if model_type == 'AUTO' or model_type == 'AUTODeep':
+      print('Size X before reshape for Auto: ' + str(X.shape))
+      X = np.reshape(X, (X.shape[0], np.prod(X.shape[1:])))
+      print('Size X after reshape for Auto: ' + str(X.shape))
+
+
+  #Normalize X - TODO: need to save mean and std for future test + val
+  if normalization:
+    print('Normalizing X')
+    X = (X - np.mean(X)) / np.std(X)
+
+  # convert class vectors to one hot Y and recast X
+  Y = tf.keras.utils.to_categorical(Y_class,feats.num_classes)
+  X = X.astype('float32')
+
+  # add watermark for testing models
+  if watermark:
+    X[Y[:,0]==0,0:2,] = 0
+    X[Y[:,0]==1,0:2,] = 1
+
+  # Compute model input shape
+  feats.input_shape = X.shape[1:]
+
+  # Split training test and validation data
+  val_prop = val_split / (1-test_split)
+  (feats.x_train,
+    feats.x_test,
+    feats.y_train,
+    feats.y_test) = train_test_split(X, Y,
+                                     test_size=test_split,
+                                     random_state=random_seed)
+  (feats.x_train,
+   feats.x_val,
+   feats.y_train,
+   feats.y_val) = train_test_split(feats.x_train, feats.y_train,
+                                   test_size=val_prop,
+                                   random_state=random_seed)
+
+  #compute class weights for uneven classes
+  y_ints = [y.argmax() for y in feats.y_train]
+  class_weights = class_weight.compute_class_weight('balanced',
+                                                 np.unique(y_ints),
+                                                 y_ints)
+  feats.class_weights = {i : class_weights[i] for i in range(len(class_weights))}
+
+  #Print some outputs
+  print('Combined X Shape: ' + str(X.shape))
+  print('Combined Y Shape: ' + str(Y_class.shape))
+  print('Y Example (should be 1s & 0s): ' + str(Y_class[0:10]))
+  print('X Range: ' + str(np.min(X)) + ':' + str(np.max(X)))
+  print('Input Shape: ' + str(feats.input_shape))
+  print('x_train shape:', feats.x_train.shape)
+  print(feats.x_train.shape[0], 'train samples')
+  print(feats.x_test.shape[0], 'test samples')
+  print(feats.x_val.shape[0], 'validation samples')
+  print('Class Weights: ' + str(feats.class_weights))
+
+  return feats
