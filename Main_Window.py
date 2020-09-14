@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 from multiprocessing import Process
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
@@ -47,6 +48,9 @@ class MainWindow(QMainWindow):
         btn3.setCheckable(True)
         btn3.setStyleSheet("QPushButton {max-width: 26; max-height: 26; border-radius: 13; border: 2px solid black; background-color: red;}")
         
+        btn4 = QPushButton('New User')
+        btn4.setStyleSheet("QPushButton { max-width: 15em}")
+
         def toggle(button):
             if button.isChecked():
                 button.setStyleSheet("QPushButton"
@@ -162,6 +166,7 @@ class MainWindow(QMainWindow):
         layout2b.addWidget(artFeatures2, 1, 1, 1, 2)
         layout2b.addWidget(artFeatures3, 2, 1, 1, 2)
         layout2b.addWidget(artFeatures4, 3, 1, 1, 2)
+        layout2b.addWidget(btn4, 4, 0, 1, 1)
 
         layout2b.setAlignment(Qt.AlignCenter)
     
@@ -200,6 +205,7 @@ class MainWindow(QMainWindow):
         btn1.clicked.connect(self.RecordBaseline)
         btn2.clicked.connect(self.open_artScreen)
         btn3.clicked.connect(lambda: toggle(btn3))
+        btn4.clicked.connect(self.newUser)
 
     def open_artScreen(self):
         global currentFeatures
@@ -239,6 +245,12 @@ class MainWindow(QMainWindow):
                 stimulus.close()
                 recording.close()
                 print("baseline task complete")
+    
+    def newUser(self):
+        new,ok = QInputDialog.getText(self, "Enter name", "Name")
+        if ok:
+            users.append(new)
+            print(users)
 
   
 features = ["Red",
@@ -360,6 +372,8 @@ class RadioDialog(QDialog):
             self.customH.setDisabled(False)
             self.customW.setDisabled(False)
             self.custom = True
+
+users = []
 
 currentFeatures = [0, 1, 2, 3]   # 0 = Red, 1 = Green, 2 = Blue, 3 = Shape
 
