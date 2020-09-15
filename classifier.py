@@ -43,7 +43,7 @@ class LiveModel:
         self.current_chunk = None #the newest 250 chunk
         self.model_q = model_q #queue to recieve from running stream
         self.art_q = art_q #queue to send to artScreen
-        self.model = models.load_model)(modelPath)
+        self.model = models.load_model(modelPath)
 
         #preprocessing parameters
         self.l_freq = l_freq

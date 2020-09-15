@@ -1,11 +1,11 @@
 import sys
 import os
 import time
-from multiprocessing import Process
+from multiprocessing import Process, Queue
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout
 from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox, QRadioButton, QDialogButtonBox, QLineEdit
-from PyQt5.QtWidgets import QInputDialog, QDialog, QDesktopWidget
+from PyQt5.QtWidgets import QInputDialog, QDialog, QDesktopWidget, QProgressBar
 from PyQt5.QtGui import QFont, QPixmap, QIcon, QIntValidator
 from PyQt5.QtCore import Qt
 from Image_Manipulation.artScreen import launchArtScreen
@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
 
         btn2 = QPushButton('Start')
         btn2.setStyleSheet("QPushButton { max-width: 15em}")
+        btn2.setEnabled(False)
 
         btn3 = QPushButton()
         btn3.setCheckable(True)
@@ -50,6 +51,10 @@ class MainWindow(QMainWindow):
         
         btn4 = QPushButton('New User')
         btn4.setStyleSheet("QPushButton { max-width: 15em}")
+
+        btn5 = QPushButton('Train Model')
+        btn5.setStyleSheet("QPushButton { max-width: 15em}")
+
 
         def toggle(button):
             if button.isChecked():
@@ -196,6 +201,8 @@ class MainWindow(QMainWindow):
         layout0.addLayout(layout1)
         layout0.addLayout(layout2)
         layout0.addLayout(layout3)
+        layout0.addWidget(btn5)
+
 
         self.widget = QWidget()
         self.widget.setLayout(layout0)
@@ -206,6 +213,18 @@ class MainWindow(QMainWindow):
         btn2.clicked.connect(self.open_artScreen)
         btn3.clicked.connect(lambda: toggle(btn3))
         btn4.clicked.connect(self.newUser)
+        #btn5.clicked.connect(lambda: trainModel(self))
+        btn5.clicked.connect(self.startTraining)
+
+        def trainModel(self):
+            if btn2.isEnabled():
+                btn2.setEnabled(False)    
+            else:
+                btn2.setEnabled(True)
+
+    def startTraining(self):
+        training = ProgressDialog(self)
+        training.trainDialog()
 
     def open_artScreen(self):
         global currentFeatures
@@ -231,10 +250,13 @@ class MainWindow(QMainWindow):
             path = "data\\" + filename
             duration,ok = QInputDialog.getInt(self, "Enter recording duration", "Time (s):", default, minTime, maxTime, increment)
             if ok:
-                stimulus = Process(target=stroopy_words.present, args=(duration,))
+                q = Queue(5)
+                stimulus = Process(target=stroopy_words.present, args=(q,duration))
                 recording = Process(target=record.record, args=(duration, path))
                 stimulus.start()
                 recording.start()
+                while stimulus.is_alive():
+                    print(q.get())
                 print(stimulus, stimulus.is_alive())
                 print(recording, recording.is_alive())
                 time.sleep(duration)
@@ -372,6 +394,28 @@ class RadioDialog(QDialog):
             self.customH.setDisabled(False)
             self.customW.setDisabled(False)
             self.custom = True
+
+class ProgressDialog(QDialog):
+    def trainDialog(self):
+        self.initUI()
+
+
+    def initUI(self):
+        self.setWindowTitle("Training Model")
+        self.setStyleSheet("QDialog { border-image: url(Images/Background.jpg) center center cover no-repeat; color: white }")
+        self.label = QLabel("Please wait while the model is training.")
+        self.label.setStyleSheet("QLabel { color: white}")
+        self.progressBar = QProgressBar()
+        self.progressBar.setGeometry(0, 0, 300, 25)
+        self.progressBar.setMaximum(100)    
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.progressBar)
+        self.layout.addWidget(self.label)
+        self.setLayout(self.layout)
+
+        self.exec_()
+
+    
 
 users = []
 

@@ -1,16 +1,14 @@
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
-
 from PyQt5.QtCore import QTimer, Qt
 from multiprocessing import Process, Queue
 from running_stream import *
-
 from PIL.ImageQt import ImageQt
 import sys
 import numpy as np
 import pdb
-from circleArt import circleArt
-from ..classifier import LiveModel
+from Image_Manipulation.circleArt import circleArt
+#from classifier import LiveModel
 
 
 class artScreen(QDialog):
@@ -105,10 +103,10 @@ def spawned_stream_process(band_q,model_q):
     stream = Stream()
     stream.run(band_q,model_q)
 
-def spawned_model_process(model_q,art_q):
+# def spawned_model_process(model_q,art_q):
 
-    liveModel = LiveModel('model/cnn_time_dom.h5',model_q,art_q)
-    liveModel.run()
+#     liveModel = LiveModel('model/cnn_time_dom.h5',model_q,art_q)
+#     liveModel.run()
 
 def main():
     
@@ -143,9 +141,9 @@ def launchArtScreen(size, artFeatures):
     run_process = Process(target = spawned_process, args = (band_q,model_q))
     run_process.start() 
 
-    global running_model
-    running_model = Process(target = spawned_model_process, args=(model_q,art_q))
-    running_model.start()
+    # global running_model
+    # running_model = Process(target = spawned_model_process, args=(model_q,art_q))
+    # running_model.start()
 
 
     art = artScreen()
