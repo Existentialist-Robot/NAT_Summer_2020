@@ -8,25 +8,29 @@ from PIL import Image
 import sys
 import numpy as np
 import pdb
-# from circleArt import circleArt
-from Image_Manipulation.circleArt import circleArt
+from circleArt import circleArt
+# from Image_Manipulation.circleArt import circleArt
 import random
 import time
 
 class artScreen(QDialog):
 
-    """ This is a window that will draw an art on the screen """
-    """ inputSize is a list or a tuple of the width and the height of the screen """
-    """ App is the PyQt5.QtCore.QApplication object for the main app """
+    def artDialog(self, inputSize, artFeatures, q, mood_q):
 
-    def artDialog(self, inputSize, artFeatures, q):
-        
+        ''' This is a window that will draw an art on the screen
+    
+        inputSize is an iterable (list, tuple) of the width and the height of the screen
+        artFeatures is an interable (list, tuple) of ints indicating which art features assigned to each bandwidth (beta, alpha, theta, delta)
+        q is a multiprocessing.Process.Queue object that stores the noise level and state of each bandwidth as dictionaries
+
+        (optional) mood_q is a multiprocessing.Process.Queue object that stores numpy arrays for the probabilities of the stimulus being positive, negative, or neutral '''
+
         self.size = inputSize
         # initialize an array for the image -- x by y arrays of 3-item arrays for the HSV values of each pixel in the image
-        self.imageArray = np.zeros(
-            (self.size[0], self.size[1], 3), dtype=np.uint8)
+        self.imageArray = np.zeros((self.size[0], self.size[1], 3), dtype=np.uint8)
         self.artFeatures = artFeatures
 
+        # initialize noise levels and states of bandwidths as default values
         self.noise_dict = {
             'Delta': False,
             'Theta': False,
@@ -43,26 +47,26 @@ class artScreen(QDialog):
 
         self.initUI()
 
-        self.pulseIndex = 0
-        self.pulseMax = 8
-        self.pulseChannel = random.randint(0,2)
-        self.pulseDir = 1
-        self.dicts = []
+        # for keeping tracking of the pulsing animation inbetween updates
+        self.pulseIndex = 0 # the number of "frames" that the image has animated in one direction so far
+        self.pulseMax = 8   # the max number of "frames" that the image should animate in one direction
+        self.pulseChannel = random.randint(0,2) # randomly generate which channel should be animated for the next second
+        self.pulseDir = 1   # increase (1) or decrease (-1) the channel value
 
-        # self.updateScreen(artFeatures,q)
-
-        # Set timer for a set interval
+        # Set timer for updating the image with the new data
         timer = QTimer(self)
-        timer.timeout.connect(lambda: self.updateScreen(artFeatures,q))
+        timer.timeout.connect(lambda: self.updateScreen(artFeatures,q,mood_q=mood_q))
         timer.start(1000)  # in milliseconds e.g. 1000 = 1 sec
 
-        # set timer for creating a pulsating illusion on the image
+        # set timer for creating the pulsing animation on the image
         pulseTimer = QTimer(self)
         pulseTimer.timeout.connect(lambda: self.pulseScreen())
         pulseTimer.start(80)
         
         
     def initUI(self):
+
+        # initiating the UI layout
         self.hbox = QHBoxLayout(self)
         self.setWindowTitle('Art Screen')
         qtRectangle = QRect(0, 0, self.size[1], self.size[0])
@@ -81,52 +85,85 @@ class artScreen(QDialog):
         self.raise_()
         self.show()
 
-    def updateScreen(self,artFeatures,q):
+    def updateScreen(self,artFeatures,q,mood_q=None):
 
         ''' Update the art screen
 
-        funcName is the art function to be implemented. hsvArt produces a new image, and pulseArt creates a pulsing effect
+        artFeatures is an interable (list, tuple) of ints indicating which art features assigned to each bandwidth (beta, alpha, theta, delta)
+        q is a multiprocessing.Process.Queue object that stores the noise level and state of each bandwidth as dictionaries
+
+        (optional) mood_q is a multiprocessing.Process.Queue object that stores numpy arrays for the probabilities of the stimulus being positive, negative, or neutral
         '''
-        self.imageArray = np.zeros(
-            (self.size[0], self.size[1], 3), dtype=np.uint8)    # clear the screen first
+        self.imageArray = np.zeros((self.size[0], self.size[1], 3), dtype=np.uint8)    # clear the image array first
         
+        # only get new state_dict and noise_dict if q is not empty
         if not q.empty():
             state_dict,noise_dict = q.get()
-            if state_dict != self.state_dict or noise_dict != self.noise_dict:
-                self.state_dict = state_dict
-                self.noise_dict = noise_dict
-                self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_dict,artFeatures) #create newImage from hsvArt fun
-            else:
-                self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_dict,artFeatures)
         else:
-            self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_dict,artFeatures)
-            # newImage = Image.fromarray(self.imageArray,mode='RGB')
+            state_dict = self.state_dict
+            noise_dict = self.noise_dict
 
-        self.qim = ImageQt(Image.fromarray(self.imageArray, mode='RGB'))
-        pix = QPixmap.fromImage(self.qim)
-        self.imageLabel.setPixmap(pix)
-        self.resize(pix.width(), pix.height())
-        self.raise_()
-        self.show()
+        if state_dict != self.state_dict or noise_dict != self.noise_dict:  # only change the image if the noise levels and states of bandwidths have changed in any way
+            self.state_dict = state_dict
+            self.noise_dict = noise_dict
+            self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_dict,artFeatures) # create new image array from circleArt
 
-        self.pulseChannel = random.randint(0,2)
+            if (mood_q != None) & (not mood_q.empty()):
+                blendImage(mood_q)
+
+            # convert the array into QPixmap and put it on the UI
+            self.qim = ImageQt(Image.fromarray(self.imageArray, mode='RGB'))
+            pix = QPixmap.fromImage(self.qim)
+            self.imageLabel.setPixmap(pix)
+            self.resize(pix.width(), pix.height())
+            self.raise_()
+            self.show()
+
+            # change the channel to be pulsed for the next second
+            self.pulseChannel = random.randint(0,2)
+
+    def blendImage(self,mood_q):
+
+        ''' set diferent blend modes on the image array depending on the probability of the mood being positive, negative, or neutral
+        only run if mood_q is not empty
+        '''
+
+        # the image that will be blended into the existing image array
+        blendLayer = np.zeros((self.size[0],self.size[1],4), dtype=np.uint8)
+        
+        # get the mood array [neg, neu, pos] from mood_q
+        moodArray = mood_q.get()
+
+        if moodArray.max() > 0.6:   # only blend if we have a clear enough classification, i.e. probability above 0.6
+
+            mood = np.where(moodArray == moodArray.max())   # find which mood had the largest probability
+
+            if (mood[0] == 2)[0]:   # change the blend layer only if the mood is pos
+                blendLayer.fill(255)
+
+            blendLayer[:,:,3] = random.randint(100,200)   # randomly generate an alpha value for the blend layer
+
+            newImage = np.zeros((size[0],size[1],4), dtype=np.uint8)
+            newImage[:,:,0:3]= image
+            newImage[:,:,3] = 255
+
+            # alpha blending (https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
+            self.imageArray = Image.alpha_composite(Image.fromarray(
+                newImage, mode='RGBA'), Image.fromarray(blendLayer, mode='RGBA'))
 
     def pulseScreen(self):
 
-        # pdb.set_trace()
+        ''' create a pulsing animation by adding or subtracting 30 to any of the Red, Green, and Blue channels '''
 
-        print(self.pulseChannel)
+        # add or subtract 30 to the pulse channel depending on self.pulseDir but limit the values to between 0 and 255
+        self.imageArray[:, :, self.pulseChannel] = np.clip(self.imageArray[:, :, self.pulseChannel] + 30*self.pulseDir, 0, 255)
+        self.pulseIndex += self.pulseDir    # update self.pulseIndex
 
-        # pdb.set_trace()
-        self.imageArray[:, :, self.pulseChannel] = np.clip(
-            self.imageArray[:, :, self.pulseChannel] + 30*self.pulseDir, 0, 255)
-        self.pulseIndex += self.pulseDir
-
-        if self.pulseIndex == self.pulseMax:
-            self.pulseDir *= -1
-        elif self.pulseIndex == 0:
+        # if the pulse index reached 0 or the max
+        if self.pulseIndex == self.pulseMax | self.pulseIndex == 0:
             self.pulseDir *= -1
 
+        # convert the image into QPixmap and put it on the UI
         self.qim = ImageQt(Image.fromarray(self.imageArray, mode='RGB'))
         pix = QPixmap.fromImage(self.qim)
         self.imageLabel.setPixmap(pix)
@@ -134,7 +171,6 @@ class artScreen(QDialog):
         self.raise_()
         self.show()
 
-        # pdb.set_trace()
 
     def closeEvent(self, event):
         #global run_process

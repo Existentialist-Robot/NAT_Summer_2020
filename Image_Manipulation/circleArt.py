@@ -103,17 +103,45 @@ def main():
         'Beta': 'High'
     }
 
-    artFeatures = [0,1,2,3]
-    
-    image = circleArt(imageArray,freqNoise,freqState,artFeatures)
-    
     # image.show()
     print('freqNoise:\n',freqNoise)
     print('freqState:\n',freqState)
 
-    plt.imshow(image)
-    plt.show()
+    artFeatures = [0,1,2,3]
+    
+    image = circleArt(imageArray,freqNoise,freqState,artFeatures)
 
+    from PIL import Image
+    preimg = Image.fromarray(image,mode='RGB')
+    preimg.show()
+
+    moodArray = np.array([0.3,0.3,0.4])
+
+    # the image that will be blended into the existing image array
+    blendLayer = np.zeros((size[0],size[1],4), dtype=np.uint8)
+
+    if moodArray.max() > 0.6:   # only blend if we have a clear enough classification, i.e. probability above 0.6
+
+        mood = np.where(moodArray == moodArray.max())   # find which mood had the largest probability
+
+        if (mood[0] == 2)[0]:   # change the blend layer to all white only if the mood is pos
+            blendLayer.fill(255)
+
+        blendLayer[:,:,3] = random.randint(100,200)   # randomly generate an alpha value for the blend layer
+        
+        newImage = np.zeros((size[0],size[1],4), dtype=np.uint8)
+        newImage[:,:,0:3]= image
+        newImage[:,:,3] = 255
+
+        # if (mood[0] == 0)[0]:
+        #     image = np.maximum(newImage,blendLayer)
+        # elif (mood[0] == 2)[0]:
+        #     image = np.minimum(newImage,blendLayer)
+
+        # alpha blending (https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
+        image = Image.alpha_composite(Image.fromarray(
+            newImage, mode='RGBA'), Image.fromarray(blendLayer, mode='RGBA'))
+        image.show()
 
 if __name__ == '__main__':
     main()
