@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog, QDesktopWidget)
-from PyQt5.QtCore import QTimer, Qt, QRect
+from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
+from PyQt5.QtCore import QTimer, Qt
 from multiprocessing import Process, Queue
 from running_stream import *
 from PIL.ImageQt import ImageQt
@@ -15,7 +15,7 @@ import time
 
 class artScreen(QDialog):
 
-    def artDialog(self, inputSize, artFeatures, q, mood_q):
+    def artDialog(self, inputSize, artFeatures, band_q,art_q):
 
         ''' This is a window that will draw an art on the screen
     
@@ -44,7 +44,7 @@ class artScreen(QDialog):
             'Alpha': 'Low',
             'Beta': 'Low'
             }
-
+        
         self.initUI()
 
         # for keeping tracking of the pulsing animation inbetween updates
@@ -55,13 +55,13 @@ class artScreen(QDialog):
 
         # Set timer for updating the image with the new data
         timer = QTimer(self)
-        timer.timeout.connect(lambda: self.updateScreen(artFeatures,q,mood_q=mood_q))
+        timer.timeout.connect(lambda: self.updateScreen(artFeatures=artFeatures,band_q=band_q,art_q=art_q))
         timer.start(1000)  # in milliseconds e.g. 1000 = 1 sec
 
         # set timer for creating the pulsing animation on the image
         pulseTimer = QTimer(self)
         pulseTimer.timeout.connect(lambda: self.pulseScreen())
-        pulseTimer.start(80)
+        pulseTimer.start(100)
         
         
     def initUI(self):
@@ -69,13 +69,6 @@ class artScreen(QDialog):
         # initiating the UI layout
         self.hbox = QHBoxLayout(self)
         self.setWindowTitle('Art Screen')
-        qtRectangle = QRect(0, 0, self.size[1], self.size[0])
-        #qtRectangle = self.frameGeometry()
-        print(qtRectangle)
-        centerPoint = QDesktopWidget().availableGeometry().center()
-        qtRectangle.moveCenter(centerPoint)
-        self.move(qtRectangle.topLeft())
-
         pixmap = QPixmap()
         self.imageLabel = QLabel(self)
         self.imageLabel.setPixmap(pixmap)
@@ -85,7 +78,7 @@ class artScreen(QDialog):
         self.raise_()
         self.show()
 
-    def updateScreen(self,artFeatures,q,mood_q=None):
+    def updateScreen(self,band_q,art_q,artFeatures=[0,1,2,3]):
 
         ''' Update the art screen
 
@@ -94,11 +87,12 @@ class artScreen(QDialog):
 
         (optional) mood_q is a multiprocessing.Process.Queue object that stores numpy arrays for the probabilities of the stimulus being positive, negative, or neutral
         '''
-        self.imageArray = np.zeros((self.size[0], self.size[1], 3), dtype=np.uint8)    # clear the image array first
         
+        self.imageArray = np.zeros((self.size[0], self.size[1], 3), dtype=np.uint8)    # clear the image array first
+
         # only get new state_dict and noise_dict if q is not empty
-        if not q.empty():
-            state_dict,noise_dict = q.get()
+        if not band_q.empty():
+            state_dict,noise_dict = band_q.get()
         else:
             state_dict = self.state_dict
             noise_dict = self.noise_dict
@@ -108,8 +102,9 @@ class artScreen(QDialog):
             self.noise_dict = noise_dict
             self.imageArray = circleArt(self.imageArray,self.noise_dict,self.state_dict,artFeatures) # create new image array from circleArt
 
-            if (mood_q != None) & (not mood_q.empty()):
-                blendImage(mood_q)
+            if not art_q.empty():
+                emotion_array = art_q.get() #shape [negative, neutral, positive] softmax output
+                blendImage(emotion_array)
 
             # convert the array into QPixmap and put it on the UI
             self.qim = ImageQt(Image.fromarray(self.imageArray, mode='RGB'))
@@ -122,7 +117,7 @@ class artScreen(QDialog):
             # change the channel to be pulsed for the next second
             self.pulseChannel = random.randint(0,2)
 
-    def blendImage(self,mood_q):
+    def blendImage(self,moodArray):
 
         ''' set diferent blend modes on the image array depending on the probability of the mood being positive, negative, or neutral
         only run if mood_q is not empty
@@ -130,9 +125,6 @@ class artScreen(QDialog):
 
         # the image that will be blended into the existing image array
         blendLayer = np.zeros((self.size[0],self.size[1],4), dtype=np.uint8)
-        
-        # get the mood array [neg, neu, pos] from mood_q
-        moodArray = mood_q.get()
 
         if moodArray.max() > 0.6:   # only blend if we have a clear enough classification, i.e. probability above 0.6
 
@@ -178,25 +170,38 @@ class artScreen(QDialog):
                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-            run_process.terminate() #if we close the window the spawned child process terminates
+            run_process.terminate() 
             while run_process.is_alive() == True:
                 time.sleep(0.1)
-            # run_process.close()
+            
             print("run_process terminated")
+            
+            #if we close the window the spawned child processes terminate
+             
+            running_model.terminate()
+            while running_model.is_alive() == True:
+                time.sleep(0.1)
+            print("running_model terminated")    
             event.accept()
             print('Window closed')
         else:
             event.ignore()
 
-def spawned_process(q):
+def spawned_stream_process(band_q,model_q):
     '''
     initialize stream object and run stream.run method
     this will be the target of the stream_process
     '''
     stream = Stream()
-    stream.run(q)
+    stream.run(band_q,model_q)
+
+# def spawned_model_process(model_q,art_q):
+
+#     liveModel = LiveModel('model/cnn_time_dom.h5',model_q,art_q)
+#     liveModel.run()
 
 def main():
+    
     if QApplication.instance():
         qapp = QApplication.instance()
     else:
@@ -211,22 +216,35 @@ def main():
     # pdb.set_trace()
     # showScreen(inputSize)
     sys.exit(qapp.exec_())
+    
 
 def launchArtScreen(size, artFeatures):    
-    #initialize multiprocessing queue to allow data transfer between child process
+    
+    inputSize = size
+    #initialize multiprocessing queue to allow data transfer between runningstream and artScreen
+    band_q = Queue(5)
+    #initialize queue for runningstream and classifer
+    model_q = Queue(5)
+    #initiealize queue for classifier and artScreen
+    art_q = Queue(5)
     #initialize run_process for parallelism and make the variable global to allow 
     #exiting to make terminate the child process
+    
     global run_process
-    run_process = Process(target = spawned_process, args = (q,))
+    run_process = Process(target = spawned_stream_process, args = (band_q,model_q))
     run_process.start() 
+
+    # global running_model
+    # running_model = Process(target = spawned_model_process, args=(model_q,art_q))
+    # running_model.start()
+
 
     art = artScreen()
     art.setAttribute(Qt.WA_DeleteOnClose)
-    art.artDialog(size,artFeatures, q)
+    art.artDialog(inputSize,artFeatures, band_q,model_q)
 
-q = Queue(5)
+
 
 
 if __name__=='__main__':
     main()
-
