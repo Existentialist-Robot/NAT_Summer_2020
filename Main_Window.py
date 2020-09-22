@@ -4,7 +4,7 @@ import time
 from multiprocessing import Process, Queue
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout
-from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox, QRadioButton, QDialogButtonBox, QLineEdit
+from PyQt5.QtWidgets import QLabel, QPushButton, QComboBox, QMessageBox, QRadioButton, QDialogButtonBox, QLineEdit, QSpacerItem
 from PyQt5.QtWidgets import QInputDialog, QDialog, QDesktopWidget, QProgressBar
 from PyQt5.QtGui import QFont, QPixmap, QIcon, QIntValidator
 from PyQt5.QtCore import Qt
@@ -41,40 +41,21 @@ class MainWindow(QMainWindow):
         btn1 = QPushButton('Set Baseline')
         btn1.setStyleSheet("QPushButton { max-width: 15em}")
 
-        btn2 = QPushButton('Start')
+        btn2 = QPushButton("Start Datastream")
+        btn2.setCheckable(True)
         btn2.setStyleSheet("QPushButton { max-width: 15em}")
-        btn2.setEnabled(False)
-
-        btn3 = QPushButton()
-        btn3.setCheckable(True)
-        btn3.setStyleSheet("QPushButton {max-width: 26; max-height: 26; border-radius: 13; border: 2px solid black; background-color: red;}")
+        #btn2.setStyleSheet("QPushButton {max-width: 26; max-height: 26; border-radius: 13; border: 2px solid black; background-color: red;}")
         
+        btn3 = QPushButton('Start')
+        btn3.setStyleSheet("QPushButton { max-width: 15em}")
+        btn3.setEnabled(False)
+                
         btn4 = QPushButton('New User')
         btn4.setStyleSheet("QPushButton { max-width: 15em}")
 
         btn5 = QPushButton('Train Model')
         btn5.setStyleSheet("QPushButton { max-width: 15em}")
 
-
-        def toggle(button):
-            if button.isChecked():
-                button.setStyleSheet("QPushButton"
-                                "{"
-                                "max-height : 26; max-width : 26;"
-                                "border-radius : 13;  border : 1px solid black;"
-                                "background-color : green;"
-                                "}"
-                                ) 
-                sendData()
-            else:
-                button.setStyleSheet("QPushButton"
-                                "{"
-                                "max-height : 26; max-width : 26;"
-                                "border-radius : 13;  border : 1px solid black;"
-                                "background-color : red;"
-                                "}"
-                                ) 
-                stopData()
 
         # Create brainwave labels
         beta = QLabel('β   -   ')
@@ -96,18 +77,31 @@ class MainWindow(QMainWindow):
                 self.addItem(f)
             self.setFixedWidth(100)
 
+        def addListItems(self, list, width):
+            for l in list:
+                self.addItem(l)
+            self.setFixedWidth(width)        
+            
+
         # Create drop-downs
         artFeatures1 = QComboBox()
-        addFeatures(artFeatures1)
+        #addFeatures(artFeatures1)
+        addListItems(artFeatures1, features, 100)
 
         artFeatures2 = QComboBox()
-        addFeatures(artFeatures2)
+        #addFeatures(artFeatures2)
+        addListItems(artFeatures2, features, 100)
 
         artFeatures3 = QComboBox()
-        addFeatures(artFeatures3)
+        #addFeatures(artFeatures3)
+        addListItems(artFeatures3, features, 100)
 
         artFeatures4 = QComboBox()
-        addFeatures(artFeatures4)
+        #addFeatures(artFeatures4)
+        addListItems(artFeatures4, features, 100)
+
+        userList = QComboBox()
+        addListItems(userList, users, 100)
 
         def setFeatures():
             artFeatures1.setCurrentIndex(currentFeatures[0])
@@ -139,8 +133,24 @@ class MainWindow(QMainWindow):
         artFeatures3.currentIndexChanged.connect(lambda: changeFeatures(2)) #if 0 changed to 1
         artFeatures4.currentIndexChanged.connect(lambda: changeFeatures(3)) #if 0 changed to 1
 
+        def updateUser():
+            global users
+            global path
+            global currentUser
+            user = userList.currentText()
+            userDir = path + '/' + user
+            if os.path.exists(userDir):
+                currentUser = user
+                print(currentUser)
+            else:
+                users.clear()
+                populateUsers()
+                userList.clear()
+                addListItems(userList, users, 100)
 
+        userList.currentTextChanged.connect(lambda: updateUser())
 
+        blankSpace = QSpacerItem(40, 30)
 
         # Create window layout and add components
 
@@ -171,7 +181,12 @@ class MainWindow(QMainWindow):
         layout2b.addWidget(artFeatures2, 1, 1, 1, 2)
         layout2b.addWidget(artFeatures3, 2, 1, 1, 2)
         layout2b.addWidget(artFeatures4, 3, 1, 1, 2)
-        layout2b.addWidget(btn4, 4, 0, 1, 1)
+        layout2b.addItem(blankSpace, 4, 0, 1, 1)
+        layout2b.addItem(blankSpace, 4, 1, 1, 1)
+        layout2b.addItem(blankSpace, 5, 0, 1, 1)
+        layout2b.addItem(blankSpace, 5, 1, 1, 1)
+        layout2b.addWidget(btn4, 6, 0, 1, 1)
+        layout2b.addWidget(userList, 6, 1, 1, 1)
 
         layout2b.setAlignment(Qt.AlignCenter)
     
@@ -187,13 +202,24 @@ class MainWindow(QMainWindow):
         logo.setPixmap(pixmap2)
         logo.setAlignment(Qt.AlignCenter)
 
+        onOff = QLabel(self)
+        pixmap3 = QPixmap('Images\Off.png')
+        #pixmap3 = QPixmap('Images\On.png')
+        onOff.setPixmap(pixmap3)
+        onOff.setAlignment(Qt.AlignCenter)
+
         layout2.addLayout(layout2b)
         layout2.addWidget(RBimg)
 
         layout3 = QHBoxLayout()
         layout3.addWidget(btn1)
-        layout3.addWidget(btn3)
+        #layout3.addWidget(btn3)
+        layout3.addWidget(onOff)
         layout3.addWidget(btn2)
+
+        layout4 = QHBoxLayout()
+        layout4.addWidget(btn5)
+        layout4.addWidget(btn3)
 
         layout1.addWidget(logo)
         layout1.addWidget(title)
@@ -201,30 +227,58 @@ class MainWindow(QMainWindow):
         layout0.addLayout(layout1)
         layout0.addLayout(layout2)
         layout0.addLayout(layout3)
-        layout0.addWidget(btn5)
+        layout0.addLayout(layout4)
+        #layout0.addWidget(btn5)
 
 
         self.widget = QWidget()
         self.widget.setLayout(layout0)
         self.setCentralWidget(self.widget)
 
-        
+        def toggle(button):
+            if button.isChecked():
+                onOff.setPixmap(QPixmap('Images\On.png'))
+                button.setText("Stop Datastream")
+                sendData()
+            else:
+                onOff.setPixmap(QPixmap('Images\Off.png'))
+                button.setText("Start Datastream")
+                stopData()
+
+        def newUser(self):
+            global currentUser
+            new,ok = QInputDialog.getText(self, "Enter name", "Name")
+            if ok:
+                newDir = './data/' + new
+                if not os.path.exists(newDir):
+                    os.makedirs(newDir)
+                    print(users)
+                    users.append(new)
+                    userList.clear()
+                    userList.addItems(sorted(users))
+                    currentUser = new
+                    userList.setCurrentText(new)
+                else:
+                    error = QMessageBox.warning(self.widget, "User already exists!", "Please try a different name.")
+
         btn1.clicked.connect(self.RecordBaseline)
-        btn2.clicked.connect(self.open_artScreen)
-        btn3.clicked.connect(lambda: toggle(btn3))
-        btn4.clicked.connect(self.newUser)
-        #btn5.clicked.connect(lambda: trainModel(self))
-        btn5.clicked.connect(self.startTraining)
+        btn3.clicked.connect(self.open_artScreen)
+        btn2.clicked.connect(lambda: toggle(btn2))
+        btn4.clicked.connect(lambda: newUser(self))
+        btn5.clicked.connect(lambda: trainModel(self))
+        #btn5.clicked.connect(self.startTraining)
 
         def trainModel(self):
-            if btn2.isEnabled():
-                btn2.setEnabled(False)    
+            if btn3.isEnabled():
+                btn3.setEnabled(False)    
             else:
-                btn2.setEnabled(True)
+                btn3.setEnabled(True)
 
     def startTraining(self):
         training = ProgressDialog(self)
+        #training.accepted.connect(lambda: MainWindow.trainModel(self))
         training.trainDialog()
+        #print(ok)
 
     def open_artScreen(self):
         global currentFeatures
@@ -247,7 +301,7 @@ class MainWindow(QMainWindow):
 
             timestamp = time.strftime("%Y%m%d-%H%M%S")
             filename = timestamp + "_csv.txt"
-            path = "data\\" + filename
+            path = "data/" + currentUser + '/' + filename
             duration,ok = QInputDialog.getInt(self, "Enter recording duration", "Time (s):", default, minTime, maxTime, increment)
             if ok:
                 q = Queue(5)
@@ -255,8 +309,8 @@ class MainWindow(QMainWindow):
                 recording = Process(target=record.record, args=(duration, path))
                 stimulus.start()
                 recording.start()
-                while stimulus.is_alive():
-                    print(q.get())
+                #while stimulus.is_alive():
+                #    print(q.get())
                 print(stimulus, stimulus.is_alive())
                 print(recording, recording.is_alive())
                 time.sleep(duration)
@@ -268,11 +322,7 @@ class MainWindow(QMainWindow):
                 recording.close()
                 print("baseline task complete")
     
-    def newUser(self):
-        new,ok = QInputDialog.getText(self, "Enter name", "Name")
-        if ok:
-            users.append(new)
-            print(users)
+
 
   
 features = ["Red",
@@ -399,7 +449,6 @@ class ProgressDialog(QDialog):
     def trainDialog(self):
         self.initUI()
 
-
     def initUI(self):
         self.setWindowTitle("Training Model")
         self.setStyleSheet("QDialog { border-image: url(Images/Background.jpg) center center cover no-repeat; color: white }")
@@ -407,17 +456,36 @@ class ProgressDialog(QDialog):
         self.label.setStyleSheet("QLabel { color: white}")
         self.progressBar = QProgressBar()
         self.progressBar.setGeometry(0, 0, 300, 25)
-        self.progressBar.setMaximum(100)    
+        self.progressBar.setMaximum(100)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.progressBar)
         self.layout.addWidget(self.label)
+        self.layout.addWidget(self.buttons)
         self.setLayout(self.layout)
+
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
 
         self.exec_()
 
-    
-
 users = []
+defaultUser = '(default)'
+currentUser = defaultUser
+path = './data/'
+
+
+def populateUsers():
+    if not os.path.exists(path + defaultUser):
+        os.makedirs(path + defaultUser)
+    contents = os.listdir(path)
+    print(contents)
+    for item in contents:
+        if os.path.isdir(os.path.join(path, item)):
+            users.append(item)
+            print(users)
+            
+populateUsers()
 
 currentFeatures = [0, 1, 2, 3]   # 0 = Red, 1 = Green, 2 = Blue, 3 = Shape
 

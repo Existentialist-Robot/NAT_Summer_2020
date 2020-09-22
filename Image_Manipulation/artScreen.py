@@ -1,5 +1,6 @@
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
+
 from PyQt5.QtCore import QTimer, Qt
 from multiprocessing import Process, Queue
 from running_stream import *
@@ -138,7 +139,7 @@ def launchArtScreen(size, artFeatures):
     #exiting to make terminate the child process
     
     global run_process
-    run_process = Process(target = spawned_process, args = (band_q,model_q))
+    run_process = Process(target = spawned_stream_process, args = (band_q,model_q))
     run_process.start() 
 
     # global running_model
