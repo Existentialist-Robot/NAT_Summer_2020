@@ -12,6 +12,7 @@ from circleArt import circleArt
 # from Image_Manipulation.circleArt import circleArt
 import random
 import time
+import math
 
 class artScreen(QDialog):
 
@@ -104,7 +105,7 @@ class artScreen(QDialog):
 
             if not art_q.empty():
                 emotion_array = art_q.get() #shape [negative, neutral, positive] softmax output
-                blendImage(emotion_array)
+                self.waveEffect(emotion_array)
 
             # convert the array into QPixmap and put it on the UI
             self.qim = ImageQt(Image.fromarray(self.imageArray, mode='RGB'))
@@ -163,7 +164,19 @@ class artScreen(QDialog):
         self.raise_()
         self.show()
 
+    def waveEffect(self,moodArray):
+        if moodArray.max() > 0.6:   # only blend if we have a clear enough classification, i.e. probability above 0.6
 
+            mood = np.where(moodArray == moodArray.max())   # find which mood had the largest probability
+
+            for i in range(self.size[0]):
+                for j in range(self.size[1]):
+                    offset_x = int(25.0 * math.sin(2 * 3.14 * i / 180))
+                    if i+offset_x < self.size[0]:
+                        self.imageArray[i,j] = self.imageArray[(i+offset_x)%self.size[1],j]
+                    else:
+                        self.imageArray[i,j] = 0
+    
     def closeEvent(self, event):
         #global run_process
         reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?',
@@ -178,10 +191,10 @@ class artScreen(QDialog):
             
             #if we close the window the spawned child processes terminate
              
-            running_model.terminate()
-            while running_model.is_alive() == True:
-                time.sleep(0.1)
-            print("running_model terminated")    
+            # running_model.terminate()
+            # while running_model.is_alive() == True:
+            #     time.sleep(0.1)
+            # print("running_model terminated")
             event.accept()
             print('Window closed')
         else:

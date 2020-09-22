@@ -23,6 +23,12 @@ class CircularBuffer:
         # fill in window with one chunk of data
         chunk_start = self.window_write * self.chunk_size
         chunk_end = (self.window_write + 1) * self.chunk_size
+
+        if np.shape(data) != (channels, buffer):
+            temp_data = np.zeros((channels, buffer))
+            temp_data[0:np.shape(data)[0], 0:np.shape(data)[1]] = data
+            data = temp_data
+
         self.window[:, chunk_start:chunk_end] = data
         self.window_write = (self.window_write + 1) % self.chunks
         self.window_read = (self.window_read + 1) % self.chunks

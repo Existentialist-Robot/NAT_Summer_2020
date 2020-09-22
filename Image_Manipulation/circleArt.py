@@ -112,35 +112,42 @@ def main():
     image = circleArt(imageArray,freqNoise,freqState,artFeatures)
 
     from PIL import Image
+    import math
+
     preimg = Image.fromarray(image,mode='RGB')
     preimg.show()
 
-    moodArray = np.array([0.3,0.3,0.4])
+    moodArray = np.array([0.7,0.2,0.1])
 
     # the image that will be blended into the existing image array
-    blendLayer = np.zeros((size[0],size[1],4), dtype=np.uint8)
+    # blendLayer = np.zeros((size[0],size[1],4), dtype=np.uint8)
 
     if moodArray.max() > 0.6:   # only blend if we have a clear enough classification, i.e. probability above 0.6
 
-        mood = np.where(moodArray == moodArray.max())   # find which mood had the largest probability
+        mood = np.where(moodArray == moodArray.max())[0]   # find which mood had the largest probability
 
-        if (mood[0] == 2)[0]:   # change the blend layer to all white only if the mood is pos
-            blendLayer.fill(255)
+        # if (mood[0] == 2)[0]:   # change the blend layer to all white only if the mood is pos
+        #     blendLayer.fill(255)
 
-        blendLayer[:,:,3] = random.randint(100,200)   # randomly generate an alpha value for the blend layer
+        # blendLayer[:,:,3] = random.randint(100,200)   # randomly generate an alpha value for the blend layer
         
-        newImage = np.zeros((size[0],size[1],4), dtype=np.uint8)
-        newImage[:,:,0:3]= image
-        newImage[:,:,3] = 255
+        # newImage = np.zeros((size[0],size[1],4), dtype=np.uint8)
+        # newImage[:,:,0:3]= image
+        # newImage[:,:,3] = 255
 
-        # if (mood[0] == 0)[0]:
-        #     image = np.maximum(newImage,blendLayer)
-        # elif (mood[0] == 2)[0]:
-        #     image = np.minimum(newImage,blendLayer)
+        # # alpha blending (https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
+        # image = Image.alpha_composite(Image.fromarray(
+        #     newImage, mode='RGBA'), Image.fromarray(blendLayer, mode='RGBA'))
 
-        # alpha blending (https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
-        image = Image.alpha_composite(Image.fromarray(
-            newImage, mode='RGBA'), Image.fromarray(blendLayer, mode='RGBA'))
+        for i in range(size[0]):
+            for j in range(size[1]):
+                offset_x = int(25.0 * math.sin(2 * 3.14 * i / 180))
+                if i+offset_x < size[0]:
+                    image[i,j] = image[(i+offset_x),j]
+                else:
+                    image[i,j] = 0
+
+        image = Image.fromarray(image,mode='RGB')
         image.show()
 
 if __name__ == '__main__':
