@@ -8,8 +8,8 @@ from PIL import Image
 import sys
 import numpy as np
 import pdb
-from circleArt import circleArt
-# from Image_Manipulation.circleArt import circleArt
+# from circleArt import circleArt
+from Image_Manipulation.circleArt import circleArt
 import random
 import time
 import math
