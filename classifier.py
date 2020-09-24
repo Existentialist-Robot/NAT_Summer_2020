@@ -8,7 +8,7 @@ import os
 
 
 
-def make_model():
+def make_model(model_path):
     '''
     hyper parameters to play around with
     filt_size: convolution size
@@ -33,11 +33,11 @@ def make_model():
 
     model,_ = TrainTestVal(model,feats,train_epochs=5)
 
-    model(model.save('model/model_name.h5'))
+    model(model.save(model_path))
 
 
 class LiveModel:
-    def __init__(self,modelPath, model_q,art_q):
+    def __init__(self,model_path, model_q,art_q):
 
         self.last_chunk = None #the previous 250 chunk
         self.current_chunk = None #the newest 250 chunk
