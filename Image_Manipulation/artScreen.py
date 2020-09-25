@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog)
-from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QLabel, QApplication, QMessageBox, QDialog, QDesktopWidget)
+from PyQt5.QtCore import QTimer, Qt, QRect
 from multiprocessing import Process, Queue
 from running_stream import *
 from PIL.ImageQt import ImageQt
@@ -13,6 +13,7 @@ from Image_Manipulation.circleArt import circleArt
 import random
 import time
 import math
+#from classifier import LiveModel
 
 class artScreen(QDialog):
 
@@ -56,7 +57,7 @@ class artScreen(QDialog):
 
         # Set timer for updating the image with the new data
         timer = QTimer(self)
-        timer.timeout.connect(lambda: self.updateScreen(artFeatures=artFeatures,band_q=band_q,art_q=art_q))
+        timer.timeout.connect(lambda: self.updateScreen(band_q=band_q,art_q=art_q, artFeatures=artFeatures))
         timer.start(1000)  # in milliseconds e.g. 1000 = 1 sec
 
         # set timer for creating the pulsing animation on the image
@@ -70,6 +71,12 @@ class artScreen(QDialog):
         # initiating the UI layout
         self.hbox = QHBoxLayout(self)
         self.setWindowTitle('Art Screen')
+
+        qtRectangle = QRect(0, 0, self.size[1], self.size[0])
+        centerPoint = QDesktopWidget().availableGeometry().center()
+        qtRectangle.moveCenter(centerPoint)
+        self.move(qtRectangle.topLeft())
+        
         pixmap = QPixmap()
         self.imageLabel = QLabel(self)
         self.imageLabel.setPixmap(pixmap)
