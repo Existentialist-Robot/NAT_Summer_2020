@@ -10,7 +10,7 @@ from math import floor
 from csv import reader
 
 
-def present(q, duration=120):
+def present(q, duration=120, width=1920, height=1080):
 
     # create
     info = StreamInfo('Markers', 'Markers', 1, 0, 'int32', 'myuidw43536')
@@ -34,8 +34,8 @@ def present(q, duration=120):
     trials = DataFrame(dict(position=position,
                             timestamp=np.zeros(n_trials)))
 
-    mywin = visual.Window([500, 500], monitor="testMonitor", units="deg",
-                          fullscr=False)
+    mywin = visual.Window([width, height], monitor="testMonitor", units="deg",
+                          fullscr=True)
 
     word_files = glob(r'stimulus_presentation\words\*.txt')
     negative = open(word_files[0])
@@ -70,7 +70,7 @@ def present(q, duration=120):
 
         timestamp = time()
         outlet.push_sample([markernames[pos]], timestamp)
-        q.put((markernames[pos], timestamp)) #test
+        #q.put((markernames[pos], timestamp)) #test - hangs after showing 5th word when enabled
         mywin.flip()
 
         # offset

@@ -12,6 +12,8 @@ from Image_Manipulation.artScreen import launchArtScreen
 import stroopy_words
 import record
 import send_art_stream
+import classifier
+
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -19,10 +21,10 @@ class MainWindow(QMainWindow):
        
         appName = 'RemBRAINdt'
 
-        # Main window setup
+        # ~~~Main window setup~~~
+
         self.setWindowTitle(appName)
         self.resize(800, 400)
-        #self.setStyleSheet("QMainWindow { background: url(Images/Background.jpg) center center cover no-repeat fixed; color: white }")
         self.setStyleSheet("QMainWindow { border-image: url(Images/Background.jpg) center center cover no-repeat; color: white }")
         self.setWindowIcon(QIcon('Images\Icon.png'))
 
@@ -38,71 +40,78 @@ class MainWindow(QMainWindow):
         title.setAlignment(Qt.AlignCenter)
 
         # Create buttons
+        btnFont = QFont('Arial', 11)
+        btnStyle = ("QPushButton {"
+                        "max-width: 15em;"
+                        "color: black;"
+                        "background-color: #f5eadf;"
+                    "}")
+
         btn1 = QPushButton('Set Baseline')
-        btn1.setStyleSheet("QPushButton { max-width: 15em}")
+        btn1.setFont(btnFont)
+        btn1.setStyleSheet(btnStyle)
 
         btn2 = QPushButton("Start Datastream")
-        btn2.setCheckable(True)
-        btn2.setStyleSheet("QPushButton { max-width: 15em}")
-        #btn2.setStyleSheet("QPushButton {max-width: 26; max-height: 26; border-radius: 13; border: 2px solid black; background-color: red;}")
-        
+        btn2.setFont(btnFont)
+        btn2.setStyleSheet(btnStyle)
+        btn2.setCheckable(True) # allows button to be toggled on/off
+
         btn3 = QPushButton('Start')
-        btn3.setStyleSheet("QPushButton { max-width: 15em}")
-        btn3.setEnabled(False)
+        btn3.setFont(btnFont)
+        btn3.setStyleSheet(btnStyle)
+        btn3.setEnabled(False)  # button disabled until a trained model is available
                 
         btn4 = QPushButton('New User')
-        btn4.setStyleSheet("QPushButton { max-width: 15em}")
+        btn4.setFont(btnFont)
+        btn4.setStyleSheet(btnStyle)
 
         btn5 = QPushButton('Train Model')
-        btn5.setStyleSheet("QPushButton { max-width: 15em}")
+        btn5.setFont(btnFont)
+        btn5.setStyleSheet(btnStyle)
 
 
         # Create brainwave labels
+        labelFont = QFont('Times', 23)
+
         beta = QLabel('β   -   ')
-        beta.setStyleSheet("QLabel { color: white}")
-        beta.setFont(QFont('Times', 23))
+        beta.setStyleSheet("QLabel { color: red}")
+        beta.setFont(labelFont)
+
         alpha = QLabel('α   -   ')
-        alpha.setStyleSheet("QLabel { color: white}")
-        alpha.setFont(QFont('Times', 23)) 
+        alpha.setStyleSheet("QLabel { color: green}")
+        alpha.setFont(labelFont) 
+        
         theta = QLabel('θ   -   ')
-        theta.setStyleSheet("QLabel { color: white}")
-        theta.setFont(QFont('Times', 23))
+        theta.setStyleSheet("QLabel { color: blue}")
+        theta.setFont(labelFont)
+        
         delta = QLabel('δ   -   ')
-        delta.setStyleSheet("QLabel { color: white}")
-        delta.setFont(QFont('Times', 23))
+        delta.setStyleSheet("QLabel { color: yellow}")
+        delta.setFont(labelFont)
 
+        # Create spacer
+        blankSpace = QSpacerItem(40, 30)
 
-        def addFeatures(self):
-            for f in features:
-                self.addItem(f)
-            self.setFixedWidth(100)
+        # Create drop-down lists
+        featuresWidth = 100
+        usersWidth = 100
 
-        def addListItems(self, list, width):
-            for l in list:
-                self.addItem(l)
-            self.setFixedWidth(width)        
-            
-
-        # Create drop-downs
         artFeatures1 = QComboBox()
-        #addFeatures(artFeatures1)
-        addListItems(artFeatures1, features, 100)
+        self.addListItems(artFeatures1, features, featuresWidth)
 
         artFeatures2 = QComboBox()
-        #addFeatures(artFeatures2)
-        addListItems(artFeatures2, features, 100)
+        self.addListItems(artFeatures2, features, featuresWidth)
 
         artFeatures3 = QComboBox()
-        #addFeatures(artFeatures3)
-        addListItems(artFeatures3, features, 100)
+        self.addListItems(artFeatures3, features, featuresWidth)
 
         artFeatures4 = QComboBox()
-        #addFeatures(artFeatures4)
-        addListItems(artFeatures4, features, 100)
+        self.addListItems(artFeatures4, features, featuresWidth)
 
         userList = QComboBox()
-        addListItems(userList, users, 100)
+        self.addListItems(userList, users, usersWidth)
 
+        # Set default list items
         def setFeatures():
             artFeatures1.setCurrentIndex(currentFeatures[0])
             artFeatures2.setCurrentIndex(currentFeatures[1])
@@ -111,6 +120,7 @@ class MainWindow(QMainWindow):
         
         setFeatures()
 
+        # Swap feature list items when changed to prevent duplicate feature assignments
         def changeFeatures(index):
             if index == 0:
                 wave = artFeatures1
@@ -120,19 +130,19 @@ class MainWindow(QMainWindow):
                 wave = artFeatures3
             if index == 3:
                 wave = artFeatures4
-            new = wave.currentIndex() # set new = 1
-            old = currentFeatures[index] #get old value
-            change = currentFeatures.index(new) #find last position of 1
-            currentFeatures[change] = old # change found position to old value in map
-            currentFeatures[index] = new # change old value to new value in map
-            print(currentFeatures)
+            new = wave.currentIndex() # set new = '1'
+            old = currentFeatures[index] # get old index value
+            change = currentFeatures.index(new) # find last index position of '1'
+            currentFeatures[change] = old # change found position to old index value in feature list
+            currentFeatures[index] = new # change old index value to new value in feature list
             setFeatures()
 
-        artFeatures1.currentIndexChanged.connect(lambda: changeFeatures(0)) #if 0 changed to 1
-        artFeatures2.currentIndexChanged.connect(lambda: changeFeatures(1)) #if 0 changed to 1
-        artFeatures3.currentIndexChanged.connect(lambda: changeFeatures(2)) #if 0 changed to 1
-        artFeatures4.currentIndexChanged.connect(lambda: changeFeatures(3)) #if 0 changed to 1
+        artFeatures1.currentIndexChanged.connect(lambda: changeFeatures(0))
+        artFeatures2.currentIndexChanged.connect(lambda: changeFeatures(1))
+        artFeatures3.currentIndexChanged.connect(lambda: changeFeatures(2))
+        artFeatures4.currentIndexChanged.connect(lambda: changeFeatures(3))
 
+        # Updates the dropdown list of user profiles
         def updateUser():
             global users
             global path
@@ -141,18 +151,16 @@ class MainWindow(QMainWindow):
             userDir = path + '/' + user
             if os.path.exists(userDir):
                 currentUser = user
-                print(currentUser)
             else:
                 users.clear()
                 populateUsers()
                 userList.clear()
-                addListItems(userList, users, 100)
+                self.addListItems(userList, users, 100)
 
         userList.currentTextChanged.connect(lambda: updateUser())
 
-        blankSpace = QSpacerItem(40, 30)
 
-        # Create window layout and add components
+        # ~~~Main Window Layout~~~
 
         #                   __________________________
         #          {  layout1|   Logo    |  Title     |
@@ -162,38 +170,16 @@ class MainWindow(QMainWindow):
         #  layout0 {  layout2| layout2b  |   Image    |
         #          {         |           |            |
         #          {       __|___________|____________|
-        #          {         |                        |
         #          {  layout3|        buttons         |
+        #          {         |________________________|
+        #          {  layout4|        buttons         |
         #                    |________________________|
         
+        # Create window layout and add components
 
-        layout0 = QVBoxLayout()
-        layout0.setContentsMargins(50, 25, 50, 50)
-
-        layout2 = QHBoxLayout()
-
-        layout2b = QGridLayout()
-        layout2b.addWidget(beta, 0, 0, 1, 1)
-        layout2b.addWidget(alpha, 1, 0, 1, 1)
-        layout2b.addWidget(theta, 2, 0, 1, 1)
-        layout2b.addWidget(delta, 3, 0, 1, 1)
-        layout2b.addWidget(artFeatures1, 0, 1, 1, 2)
-        layout2b.addWidget(artFeatures2, 1, 1, 1, 2)
-        layout2b.addWidget(artFeatures3, 2, 1, 1, 2)
-        layout2b.addWidget(artFeatures4, 3, 1, 1, 2)
-        layout2b.addItem(blankSpace, 4, 0, 1, 1)
-        layout2b.addItem(blankSpace, 4, 1, 1, 1)
-        layout2b.addItem(blankSpace, 5, 0, 1, 1)
-        layout2b.addItem(blankSpace, 5, 1, 1, 1)
-        layout2b.addWidget(btn4, 6, 0, 1, 1)
-        layout2b.addWidget(userList, 6, 1, 1, 1)
-
-        layout2b.setAlignment(Qt.AlignCenter)
-    
-        layout1 = QHBoxLayout()
+        # Create images
         RBimg = QLabel(self)
-        pixmap = QPixmap('Images\RemBRAINdt_Framed.png')
-        #pixmap = QPixmap('Images\RemBRAINdt.jpg')
+        pixmap = QPixmap('Images\RemBRAINdt_Framed.png')    
         RBimg.setPixmap(pixmap)
         RBimg.setAlignment(Qt.AlignCenter)
 
@@ -204,38 +190,75 @@ class MainWindow(QMainWindow):
 
         onOff = QLabel(self)
         pixmap3 = QPixmap('Images\Off.png')
-        #pixmap3 = QPixmap('Images\On.png')
         onOff.setPixmap(pixmap3)
         onOff.setAlignment(Qt.AlignCenter)
+
+        # Main layout wrapper
+        layout0 = QVBoxLayout()
+        layout0.setContentsMargins(50, 25, 50, 50)
+
+        # Logo and title
+        layout1 = QHBoxLayout()
+        layout1.addWidget(logo)
+        layout1.addWidget(title)
+
+        # Dropdowns and RemBRAINdt image
+        layout2 = QHBoxLayout()
+
+        layout2b = QGridLayout()
+        layout2b.addWidget(beta, 0, 0, 1, 1)    # (widget, row, col, row_span, col_span)
+        layout2b.addWidget(alpha, 1, 0, 1, 1)
+        layout2b.addWidget(theta, 2, 0, 1, 1)
+        layout2b.addWidget(delta, 3, 0, 1, 1)
+        layout2b.addWidget(artFeatures1, 0, 1, 1, 1)
+        layout2b.addWidget(artFeatures2, 1, 1, 1, 1)
+        layout2b.addWidget(artFeatures3, 2, 1, 1, 1)
+        layout2b.addWidget(artFeatures4, 3, 1, 1, 1)
+        layout2b.addItem(blankSpace, 4, 0, 1, 1)
+        layout2b.addItem(blankSpace, 4, 1, 1, 1)
+        layout2b.addItem(blankSpace, 5, 0, 1, 1)
+        layout2b.addItem(blankSpace, 5, 1, 1, 1)
+        layout2b.addWidget(btn4, 6, 0, 1, 1)
+        layout2b.addWidget(userList, 6, 1, 1, 1)
+
+        layout2b.setAlignment(Qt.AlignCenter)
 
         layout2.addLayout(layout2b)
         layout2.addWidget(RBimg)
 
+        # First row of buttons
         layout3 = QHBoxLayout()
         layout3.addWidget(btn1)
-        #layout3.addWidget(btn3)
         layout3.addWidget(onOff)
         layout3.addWidget(btn2)
 
+        # Second row of buttons
         layout4 = QHBoxLayout()
         layout4.addWidget(btn5)
         layout4.addWidget(btn3)
 
-        layout1.addWidget(logo)
-        layout1.addWidget(title)
-
+        # Add all layouts to main layout wrapper
         layout0.addLayout(layout1)
         layout0.addLayout(layout2)
         layout0.addLayout(layout3)
         layout0.addLayout(layout4)
-        #layout0.addWidget(btn5)
 
-
+        # Set layout0 to the central widget
         self.widget = QWidget()
         self.widget.setLayout(layout0)
         self.setCentralWidget(self.widget)
 
-        def toggle(button):
+        #Assign functions to buttons
+        btn1.clicked.connect(self.RecordBaseline)
+        btn3.clicked.connect(self.open_artScreen)
+        btn2.clicked.connect(lambda: toggle(self, btn2))
+        btn4.clicked.connect(lambda: newUser(self))
+        btn5.clicked.connect(lambda: startTraining(self))       # placeholder - to be combined with trainclassifier
+        #btn5.clicked.connect(lambda: trainclassifier(self))    # Initiates classifier training
+
+
+        # Toggle the the Datastream button and indicator light
+        def toggle(self, button):
             if button.isChecked():
                 onOff.setPixmap(QPixmap('Images\On.png'))
                 button.setText("Stop Datastream")
@@ -245,14 +268,18 @@ class MainWindow(QMainWindow):
                 button.setText("Start Datastream")
                 stopData()
 
+        # Create new user profile
         def newUser(self):
             global currentUser
             new,ok = QInputDialog.getText(self, "Enter name", "Name")
             if ok:
                 newDir = './data/' + new
+                baselineDir = newDir + '/baseline'
+                modelDir = newDir + '/model'
                 if not os.path.exists(newDir):
                     os.makedirs(newDir)
-                    print(users)
+                    os.makedirs(baselineDir)
+                    os.makedirs(modelDir)
                     users.append(new)
                     userList.clear()
                     userList.addItems(sorted(users))
@@ -261,16 +288,14 @@ class MainWindow(QMainWindow):
                 else:
                     error = QMessageBox.warning(self.widget, "User already exists!", "Please try a different name.")
 
+        # Initiates classifier training
+        # ***To be connected to training progresss dialog
+        def trainclassifier(self):
+            global currentUser
+            classifier.make_model(currentUser)
 
-
-        btn1.clicked.connect(self.RecordBaseline)
-        btn3.clicked.connect(self.open_artScreen)
-        btn2.clicked.connect(lambda: toggle(btn2))
-        btn4.clicked.connect(lambda: newUser(self))
-        btn5.clicked.connect(lambda: startTraining(self))
-        #btn5.clicked.connect(self.startTraining)
-
-
+        # Loads training progress dialog, and enables Start button once trained
+        # ***Needs to be connected to actual time estimate from classifier training.
         def startTraining(self):
             training = ProgressDialog(self)
             if training.exec_():
@@ -279,23 +304,22 @@ class MainWindow(QMainWindow):
                     btn3.setEnabled(True)    
             else:
                 print("CANCEL")
-                
-        def trainModel(self):
-            if btn3.isEnabled():
-                btn3.setEnabled(False)    
-            else:
-                btn3.setEnabled(True)
 
 
+    # Populates a dropdown from a list
+    def addListItems(self, itemList, list, width):
+        for l in list:
+            itemList.addItem(l)
+        itemList.setFixedWidth(width)
 
-
-
+    # Launches the art screen via the screen size select dialog
     def open_artScreen(self):
         global currentFeatures
         screen_resolution = [self.width, self.height]
-        screenSize = RadioDialog(self)
+        screenSize = SizeRadioDialog(self)
         screenSize.sizeDialog(screen_resolution, currentFeatures)
 
+    # Starts baseline recording
     def RecordBaseline(self):
         global stimulus
         global recording
@@ -311,16 +335,15 @@ class MainWindow(QMainWindow):
 
             timestamp = time.strftime("%Y%m%d-%H%M%S")
             filename = timestamp + "_csv.txt"
-            path = "data/" + currentUser + '/' + filename
+            path = "data/" + currentUser + '/baseline/' + filename
+
             duration,ok = QInputDialog.getInt(self, "Enter recording duration", "Time (s):", default, minTime, maxTime, increment)
             if ok:
                 q = Queue(5)
-                stimulus = Process(target=stroopy_words.present, args=(q,duration))
-                recording = Process(target=record.record, args=(duration, path))
+                stimulus = Process(target=stroopy_words.present, args=(q,duration, self.width, self.height))  # present word list
+                recording = Process(target=record.record, args=(duration, path))    # start recording
                 stimulus.start()
                 recording.start()
-                #while stimulus.is_alive():
-                #    print(q.get())
                 print(stimulus, stimulus.is_alive())
                 print(recording, recording.is_alive())
                 time.sleep(duration)
@@ -331,23 +354,14 @@ class MainWindow(QMainWindow):
                 stimulus.close()
                 recording.close()
                 print("baseline task complete")
-    
 
+#~~~~Additional window classes~~~~
 
-
-  
-features = ["Red",
-            "Green",
-            "Blue",
-            "Shape",
-            ]
-
-
-class RadioDialog(QDialog):
+# Screen size select dialog window
+class SizeRadioDialog(QDialog):
     def sizeDialog(self, size, features):
         self.size = size
-        print(self.size)
-        self.currentFeatures = features
+        self.currentFeatures = features    # needed to pass to art screen
         self.w, self.h = int(self.size[0]*0.5), int(self.size[1]*0.5) #default small dimensions
         self.custom = False
         self.initUI()
@@ -356,6 +370,7 @@ class RadioDialog(QDialog):
         self.setWindowTitle("Screen Size")
         self.setStyleSheet("QDialog { border-image: url(Images/Background.jpg) center center cover no-repeat; color: white }")
 
+        # custom inputs
         self.validatorW = QIntValidator(50, self.size[0])
         self.validatorH = QIntValidator(50, self.size[1])
         self.customW = QLineEdit(self)
@@ -368,6 +383,8 @@ class RadioDialog(QDialog):
         self.customH.setValidator(self.validatorH)
         self.labelH = QLabel('H:')
         self.labelH.setStyleSheet("QLabel { color: white}")
+
+        # size presets
         self.choice1 = QRadioButton("Small")
         self.choice1.setStyleSheet("QRadioButton { color: white}")
         self.choice1.setChecked(True)
@@ -378,8 +395,10 @@ class RadioDialog(QDialog):
         self.choice4 = QRadioButton("Custom")
         self.choice4.setStyleSheet("QRadioButton { color: white}")
 
+        # add OK and Cancel buttons
         self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
+        # Set layouts
         self.layout = QVBoxLayout()
         self.layoutWH = QHBoxLayout()
         self.layoutWH.addWidget(self.labelW)
@@ -395,6 +414,7 @@ class RadioDialog(QDialog):
         self.layout.addWidget(self.buttons)
         self.setLayout(self.layout)
 
+        # Assign size function to radio buttons
         self.choice1.toggled.connect(lambda: self.btnState(self.choice1))
         self.choice2.toggled.connect(lambda: self.btnState(self.choice2))
         self.choice3.toggled.connect(lambda: self.btnState(self.choice3))
@@ -405,6 +425,34 @@ class RadioDialog(QDialog):
 
         self.exec_()
 
+    # sets screen size based no button states
+    def btnState(self, b):
+        if b.text() == "Small":
+            self.customH.setDisabled(True)
+            self.customW.setDisabled(True)
+            self.custom = False
+            self.w, self.h = int(self.size[0]*0.5), int(self.size[1]*0.5)
+        if b.text() == "Medium":
+            self.customH.setDisabled(True)
+            self.customW.setDisabled(True)
+            self.custom = False
+            self.w, self.h = int(self.size[0]*0.75), int(self.size[1]*0.75)
+        if b.text() == "Large":
+            self.customH.setDisabled(True)
+            self.customW.setDisabled(True)
+            self.custom = False
+            self.w, self.h = int(self.size[0]*0.9), int(self.size[1]*0.9)
+        if b.text() == "Custom":
+            self.customH.setDisabled(False)
+            self.customW.setDisabled(False)
+            self.custom = True
+
+    # calls getSize and closes Size Select dialog
+    def acceptSize(self):
+        self.getSize()
+        self.accept()
+
+    # Gets the chosen size and launches the art screen
     def getSize(self):
         if self.custom:
             W = int(self.customW.text())
@@ -430,32 +478,8 @@ class RadioDialog(QDialog):
         print(self.art_screen_size)
         launchArtScreen(self.art_screen_size, self.currentFeatures)
 
-    def acceptSize(self):
-        self.getSize()
-        self.accept()
 
-    def btnState(self, b):
-        print(b.text())
-        if b.text() == "Small":
-            self.customH.setDisabled(True)
-            self.customW.setDisabled(True)
-            self.custom = False
-            self.w, self.h = int(self.size[0]*0.5), int(self.size[1]*0.5)
-        if b.text() == "Medium":
-            self.customH.setDisabled(True)
-            self.customW.setDisabled(True)
-            self.custom = False
-            self.w, self.h = int(self.size[0]*0.75), int(self.size[1]*0.75)
-        if b.text() == "Large":
-            self.customH.setDisabled(True)
-            self.customW.setDisabled(True)
-            self.custom = False
-            self.w, self.h = int(self.size[0]*0.9), int(self.size[1]*0.9)
-        if b.text() == "Custom":
-            self.customH.setDisabled(False)
-            self.customW.setDisabled(False)
-            self.custom = True
-
+# Progress bar dialog window
 class ProgressDialog(QDialog):
 
     def __init__(self, *args, **kwargs):
@@ -464,59 +488,62 @@ class ProgressDialog(QDialog):
         self.setStyleSheet("QDialog { border-image: url(Images/Background.jpg) center center cover no-repeat; color: white }")
         self.label = QLabel("Please wait while the model is training.")
         self.label.setStyleSheet("QLabel { color: white}")
+
         self.progressBar = QProgressBar()
         self.progressBar.setGeometry(0, 0, 300, 25)
         self.progressBar.setMaximum(0)
         self.progressBar.setMinimum(0)
+
         self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel)
+        
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.progressBar)
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.buttons)
         self.setLayout(self.layout)
+        
         time = 3000
         self.timer = QTimer()
         self.timer.start(time)
         self.timer.timeout.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
-        
 
-    # def waitForTraining(self):
-    #     time = 3
-    #     count = 0
-    #     while count < time:
-    #         time.sleep(1)
-    #         count += 1
-    #     return 1
-
-
-            
-
+# define user list and default users
 users = []
 defaultUser = '(default)'
 currentUser = defaultUser
 path = './data/'
 
-
+# populate user list from existing directories
 def populateUsers():
     if not os.path.exists(path + defaultUser):
         os.makedirs(path + defaultUser)
     contents = os.listdir(path)
-    print(contents)
     for item in contents:
         if os.path.isdir(os.path.join(path, item)):
             users.append(item)
-            print(users)
             
 populateUsers()
 
+# define art features
+features = ["Red",
+            "Green",
+            "Blue",
+            "Shape",
+            ]
+
+# index feature order
 currentFeatures = [0, 1, 2, 3]   # 0 = Red, 1 = Green, 2 = Blue, 3 = Shape
 
+# define variables which will be used as processes
 sending = 0
 stimulus = 0
 recording = 0
+
+# switch to prevent baseline recording when datastream is off
 ready_baseline = 0
 
+# Start datastream and enable baseline recording
 def sendData():
     global sending
     global ready_baseline
@@ -528,6 +555,7 @@ def sendData():
     print(sending, sending.is_alive())
     ready_baseline = 1
     
+# Stop datastream and disable baseline recording    
 def stopData():
     global sending
     global ready_baseline
@@ -540,6 +568,7 @@ def stopData():
     ready_baseline = 0
 
 
+# initiate application
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MainWindow()

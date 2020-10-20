@@ -10,7 +10,7 @@ Keras-Preprocessing==1.0.9
 kiwisolver==1.0.1
 Markdown==3.0.1
 matplotlib==3.0.2
-mne==0.17.0
+mne==0.20.4
 numpy==1.16.1
 opencv-python==4.4.0.42
 pandas==0.24.1

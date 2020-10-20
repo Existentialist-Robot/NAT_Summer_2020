@@ -13,7 +13,7 @@ from Image_Manipulation.circleArt import circleArt
 import random
 import time
 import math
-#from classifier import LiveModel
+from classifier import LiveModel
 
 class artScreen(QDialog):
 
@@ -101,9 +101,11 @@ class artScreen(QDialog):
         # only get new state_dict and noise_dict if q is not empty
         if not band_q.empty():
             state_dict,noise_dict = band_q.get()
+            self.imageArray = circleArt(self.imageArray,noise_dict,state_dict,artFeatures) # create new image array from circleArt
         else:
             state_dict = self.state_dict
             noise_dict = self.noise_dict
+            self.imageArray = circleArt(self.imageArray,noise_dict,state_dict,artFeatures) # create new image array from circleArt
 
         if state_dict != self.state_dict or noise_dict != self.noise_dict:  # only change the image if the noise levels and states of bandwidths have changed in any way
             self.state_dict = state_dict
@@ -215,10 +217,10 @@ def spawned_stream_process(band_q,model_q):
     stream = Stream()
     stream.run(band_q,model_q)
 
-# def spawned_model_process(model_q,art_q):
+def spawned_model_process(model_q,art_q):
 
-#     liveModel = LiveModel('model/cnn_time_dom.h5',model_q,art_q)
-#     liveModel.run()
+    liveModel = LiveModel('data/Fred/model/cnn_time_dom.h5',model_q,art_q)
+    liveModel.run()
 
 def main():
     
@@ -254,9 +256,9 @@ def launchArtScreen(size, artFeatures):
     run_process = Process(target = spawned_stream_process, args = (band_q,model_q))
     run_process.start() 
 
-    # global running_model
-    # running_model = Process(target = spawned_model_process, args=(model_q,art_q))
-    # running_model.start()
+    global running_model
+    running_model = Process(target = spawned_model_process, args=(model_q,art_q))
+    running_model.start()
 
 
     art = artScreen()

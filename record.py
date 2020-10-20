@@ -7,7 +7,7 @@ import random
 from time import time, strftime, gmtime
 from optparse import OptionParser
 from pylsl import StreamInlet, resolve_byprop
-from sklearn.linear_model import LinearRegression
+#from sklearn.linear_model import LinearRegression
 
 def record(duration, recording_path):
     data_source="EEG"

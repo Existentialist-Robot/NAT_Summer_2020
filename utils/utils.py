@@ -95,7 +95,7 @@ def load_openBCI_csv_as_raw(filename, sfreq=256., ch_ind=[0, 1, 2, 3, 4, 5, 6, 7
         raws = concatenate_raws(raw, verbose=verbose)
     return raws
 
-def load_data(sfreq=256.,ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 
+def load_data(data_dir, sfreq=256.,ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 
               stim_ind=16, replace_ch_names=None, verbose=1):
     """Load CSV files from the /data directory into a Raw object.
 
@@ -122,7 +122,8 @@ def load_data(sfreq=256.,ch_ind=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1
     if session_nb == 'all':
         session_nb = '*'
     '''
-    recording_path = os.path.join(Path().absolute(), "data")
+    recording_path = os.path.join(Path().absolute(), "data", data_dir)
+    print(recording_path)
     filename = '*.txt'
     data_path = os.path.join(recording_path, filename)
     fnames = glob(data_path)
